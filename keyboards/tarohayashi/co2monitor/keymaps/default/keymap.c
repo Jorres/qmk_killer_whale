@@ -10,7 +10,7 @@
 // 安全圏の色
 #define SAFEHUE 150
 // 更新間隔（秒）
-#define SPAN 3
+#define SPAN 4
 // サンプル数
 #define COUNTMAX 31
 
@@ -27,8 +27,7 @@
 double emf_max = 0.2;
 double emf_chk = 0.2;
 double sum = 0.0;
-
-
+int16_t pre_ppmint = 0;
 
 // キーコードの追加
 enum co2_keycode{
@@ -95,8 +94,6 @@ static const char PROGMEM ppmfont[] = {
 
 // 計算とOLEDの表示
 bool oled_task_user(void) {
-
-
     if (timer_elapsed(count_timer) > 100){
         count = count % COUNTMAX;
         val[count] = analogReadPin(F7);
@@ -137,15 +134,20 @@ bool oled_task_user(void) {
             }
         }
 
+
         // OLED処理
         uint8_t ppmindex[4];
+        uint16_t ppmint = (uint16_t)ppm;
         if(ppm > 8888){
             ppm = 8888;
+        }else if(ppmint == pre_ppmint){
+            ppmint += 11;
         }
-        ppmindex[0] = (uint16_t)ppm / 1000;
-        ppmindex[1] = ((uint16_t)ppm % 1000) / 100;
-        ppmindex[2] = ((uint16_t)ppm % 100) / 10;
-        ppmindex[3] = (uint16_t)ppm % 10;
+        pre_ppmint = ppmint;
+        ppmindex[0] = ppmint / 1000;
+        ppmindex[1] = (ppmint % 1000) / 100;
+        ppmindex[2] = (ppmint % 100) / 10;
+        ppmindex[3] = ppmint % 10;
         if(ppmindex[0] == 0){
             ppmindex[0] = 10;
         }
