@@ -12,6 +12,7 @@
     "bootloader": "rp2040",
     "features": {
         "extrakey": true,
+        "mousekey": true,
         "pointing_device": true,
         "oled": true,
         "rgblight": true,
@@ -29,6 +30,16 @@
     "dynamic_keymap": {
         "layer_count": 10
     },
+    "encoder": {
+        "enabled": true,
+        "rotary": [
+            { "pin_a": "GP13", "pin_b": "GP14", "resolution": 2},
+            { "pin_a": "GP15", "pin_b": "GP17", "resolution": 2},
+            { "pin_a": "GP22", "pin_b": "GP26", "resolution": 2},
+            { "pin_a": "GP20", "pin_b": "GP21", "resolution": 2},
+            { "pin_a": "GP20", "pin_b": "GP21", "resolution": 2}
+        ]
+    },
     "split": {
         "enabled": true,
         "soft_serial_pin": "GP1",
@@ -45,9 +56,6 @@
             "timeout": 3000
         }
     },
-    "mouse_key": {
-        "enabled": true
-    },
     "tapping": {
         "hold_on_other_key_press": true,
     },
@@ -56,9 +64,9 @@
         "split": true,
         "split_count": [33, 33],
         "max_brightness": 200,
-        "hue_steps": 2,
-        "saturation_steps": 2,
-        "brightness_steps": 2,
+        "hue_steps": 4,
+        "saturation_steps": 4,
+        "brightness_steps": 4,
         "sleep": true,
         "animations": {
             "alternating": true,
@@ -76,15 +84,6 @@
     "ws2812": {
         "pin": "GP2",
         "driver": "vendor"
-    },
-    "encoder": {
-        "enabled": true,
-        "rotary": [
-            { "pin_a": "GP13", "pin_b": "GP14", "resolution": 2},
-            { "pin_a": "GP15", "pin_b": "GP17", "resolution": 2},
-            { "pin_a": "GP22", "pin_b": "GP26", "resolution": 2},
-            { "pin_a": "GP20", "pin_b": "GP21", "resolution": 2}
-        ]
     },
     "layouts": {
         "LAYOUT": {
