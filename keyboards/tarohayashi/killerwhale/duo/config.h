@@ -10,8 +10,9 @@
 /*    ユーザー設定    */
 //////////////////////
 
-// 入力モードデフォルト
-#define MODE_DEFAULT_LEFT CURSOR_MODE 
+// 入力モードデフォルト 
+// KEY_INPUT / CURSOR_MODE / SCROLL_MODE
+#define MODE_DEFAULT_LEFT CURSOR_MODE   
 #define MODE_DEFAULT_RIGHT CURSOR_MODE 
 
 // CPI = 600 + spd * 300 / AMP = 16.0 + (double)spd * 3.0

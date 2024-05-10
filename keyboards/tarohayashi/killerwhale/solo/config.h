@@ -14,6 +14,7 @@
 //////////////////////
 
 // 入力モードデフォルト
+// KEY_INPUT / CURSOR_MODE / SCROLL_MODE
 #define MODE_DEFAULT CURSOR_MODE 
 
 // CPI = 400 + spd * 200 / AMP = 4.0 + (double)spd * 3.0
@@ -48,8 +49,9 @@
 #define SCROLL_DIVISOR 100.0        // スクロール用数値調整
 #define JOYSTICK_DIVISOR 40.0       // ジョイスティック用調整用
 
-// OLED設定
-#define OLED_DEFAULT SHOW_LAYER     // SHOW_LAYER / SHOW_STATS / TURN_OFF
+// OLED設定    
+// SHOW_LAYER / SHOW_STATS / TURN_OFF
+#define OLED_DEFAULT SHOW_LAYER
 #define INTERRUPT_TIME 600          // OLED割り込み時間
 
 // RGBレイヤーデフォルト
