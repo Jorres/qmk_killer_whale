@@ -52,7 +52,7 @@
 #define I2C1_SCL_PIN        GP9
 #define I2C1_SDA_PIN        GP8
 #define OLED_FONT_H "./lib/glcdfont.c"
-// AUTO
+// AUTO MOUSE
 #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 // RGBLIGHT LAYERS
 #define RGBLIGHT_LAYERS

@@ -3,56 +3,14 @@
 
 #pragma once
 #include "quantum.h"
+#include "config.h"
 
-// 定数
-// CPI = 1000 + spd * 250 / AMP = 16.0 + (double)spd * 3.0
-#define SPD_DEFAULT 3
-#define SPD_OPTION_MAX 7
-
-// 角度 = angle * 12
-#define ANGLE_DEFAULT_LEFT 8
-#define ANGLE_DEFAULT_RIGHT 7
-#define ANGLE_OPTION_MAX 29
-
-#define CPI_SLOW 300 // スローモード時CPI
-#define AMP_SLOW 4.0 // スローモード時AMP
-
-// ジョイスティク用定数
-#define NO_JOYSTICK_VAL 100         // JSの有無判定閾値
-#define KEY_OFFSET 7                // キー入力閾値
-#define TIMEOUT_KEY 80              // キー入力間隔
-#define JOYSTICK_MOVE_OFFSET 100    // ジョイスティック移動閾値
-
-#define SCROLL_DIVISOR 100.0        // スクロール用数値調整
-#define JOYSTICK_DIVISOR 40.0       // ジョイスティック用調整用
-
-// 一時的モード変更タップ判定ms
-#define TERM_TEMP 100
-
-// OLED切り替え時間
-#define INTERRUPT_TIME 600
-
-// 入力モード
-enum pdmode{
-    KEY_INPUT = 0,
-    CURSOR_MODE,
-    SCROLL_MODE
-};
-
-// ジョイスティックの状態ydfqsdfqwe4
+// ジョイスティックの状態
 enum jsmode{
     NO_JOYSTICK = 0,
     JOYSTICK_LEFT,
     JOYSTICK_RIGHT
 };
-
-// OLED
-enum oledmode{
-    SHOW_STATS = 0,
-    SHOW_LAYER,
-    TURN_OFF
-};
-
 
 // 保存される設定の定義
 typedef union{

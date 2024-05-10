@@ -254,14 +254,14 @@ bool oled_task_addedoled(void) {
             oled_write_P(get_u16_str(16 + (uint16_t)kw_config.spd_l * 3, ' '), false);
         }else{
             oled_write_P(PSTR(" L:"), false);
-            oled_write(get_u16_str(1000 + (uint16_t)kw_config.spd_l * 250, ' '), false);
+            oled_write(get_u16_str(600 + (uint16_t)kw_config.spd_l * 300, ' '), false);
         } 
         if(get_joystick_attached() == JOYSTICK_RIGHT){
             oled_write_P(PSTR(" J:"), false);
             oled_write(get_u16_str(16 + (uint16_t)kw_config.spd_r * 3, ' '), false);
         }else{
             oled_write_P(PSTR(" R:"), false);
-            oled_write_P(get_u16_str(1000 + (uint16_t)kw_config.spd_r * 250, ' '), false);
+            oled_write_P(get_u16_str(600 + (uint16_t)kw_config.spd_r * 300, ' '), false);
         }
 
         oled_set_cursor(0, 1);

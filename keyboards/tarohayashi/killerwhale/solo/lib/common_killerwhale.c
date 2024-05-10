@@ -16,11 +16,10 @@ bool slow_mode;       // 一時的モード変更用
 bool joystick_attached;     // ジョイスティックの有無
 float scroll_accumulated_h; // スクロール端数保存用
 float scroll_accumulated_v; // スクロール端数保存用
-
 int16_t gp27_newt; // ジョイスティックの初期値
 int16_t gp28_newt; // ジョイスティックの初期値
 
-// 仮想十字キー設定用
+// 仮想十字キー設定用変数
 keypos_t key_up;
 keypos_t key_left;
 keypos_t key_right;
@@ -36,7 +35,7 @@ int16_t keycode_left;
 int16_t keycode_right;
 int16_t key_timer;
 
-// 十字キー排他設定
+// 十字キー排他設定変数
 uint8_t dpad_pressed;
 
 /* eeprom */
@@ -48,13 +47,13 @@ void eeconfig_init_kb(void) {
     }else {
         kw_config.angle = ANGLE_DEFAULT_LEFT;
     }
-    kw_config.rgb_layer = false;
-    kw_config.pd_mode = CURSOR_MODE;
-    kw_config.inv = true;
-    kw_config.inv_sc = false;
-    kw_config.auto_mouse = true;
-    kw_config.oled_mode = SHOW_LAYER;
-    kw_config.dpad_exclusion = true;
+    kw_config.rgb_layer = RGB_LAYER_DEFAULT;
+    kw_config.pd_mode = MODE_DEFAULT;
+    kw_config.inv = INVERT_DEFAULT;
+    kw_config.inv_sc = INVERT_SCROLL_DEFAULT;
+    kw_config.auto_mouse = AUTO_MOUSE_DEFAULT;
+    kw_config.oled_mode = OLED_DEFAULT;
+    kw_config.dpad_exclusion = DPAD_EX_DEFAULT ;
     eeconfig_update_kb(kw_config.raw);
 
     eeconfig_init_user();

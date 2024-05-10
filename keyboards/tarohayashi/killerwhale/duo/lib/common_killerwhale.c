@@ -22,7 +22,7 @@ float scroll_accumulated_r_v;
 int16_t gp27_newt;              // ジョイスティックの初期値
 int16_t gp28_newt; 
 
-// 仮想十字キー設定用
+// 仮想十字キー設定用変数
 keypos_t key_up_l;
 keypos_t key_up_r;
 keypos_t key_left_l;
@@ -51,7 +51,7 @@ int16_t keycode_right_r;
 int16_t key_timer_l;
 int16_t key_timer_r;
 
-// 斜め入力防止用
+// 斜め入力防止用変数
 bool dpad_exclusion;
 uint8_t dpad_pressed_l;
 uint8_t dpad_pressed_r;
@@ -59,18 +59,18 @@ uint8_t dpad_pressed_r;
 /* eeprom */
 // 初期化
 void eeconfig_init_kb(void) {
-    kw_config.spd_l = SPD_DEFAULT;
-    kw_config.spd_r = SPD_DEFAULT;
+    kw_config.spd_l = SPD_DEFAULT_LEFT;
+    kw_config.spd_r = SPD_DEFAULT_RIGHT;
     kw_config.angle_l = ANGLE_DEFAULT_LEFT;
     kw_config.angle_r = ANGLE_DEFAULT_RIGHT;
-    kw_config.pd_mode_l = CURSOR_MODE;
-    kw_config.pd_mode_r = CURSOR_MODE;
-    kw_config.inv_l = true;
-    kw_config.inv_r = true;
-    kw_config.inv_sc = false;
-    kw_config.auto_mouse = true;
-    kw_config.rgb_layer = false;
-    kw_config.oled_mode = true;
+    kw_config.pd_mode_l = MODE_DEFAULT_LEFT;
+    kw_config.pd_mode_r = MODE_DEFAULT_RIGHT;
+    kw_config.inv_l = INVERT_LEFT_DEFAULT;
+    kw_config.inv_r = INVERT_RIGHT_DEFAULT;
+    kw_config.inv_sc = INVERT_SCROLL_DEFAULT;
+    kw_config.auto_mouse = AUTO_MOUSE_DEFAULT;
+    kw_config.rgb_layer = RGB_LAYER_DEFAULT;
+    kw_config.oled_mode = OLED_DEFAULT;
     eeconfig_update_kb(kw_config.raw);
 
     eeconfig_init_user();
@@ -179,7 +179,7 @@ void matrix_init_kb(void) {
     }
     key_timer_l = timer_read();
     key_timer_r = timer_read();
-    dpad_exclusion = true;
+    dpad_exclusion = DPAD_EX_DEFAULT;
 
     matrix_init_user();
 }
@@ -192,8 +192,8 @@ void pointing_device_init_kb(void){
     scroll_accumulated_l_v = 0;
     scroll_accumulated_r_h = 0;
     scroll_accumulated_r_v = 0;
-    pointing_device_set_cpi_on_side(true,  1000 + kw_config.spd_l * 250);
-    pointing_device_set_cpi_on_side(false, 1000 + kw_config.spd_r * 250);
+    pointing_device_set_cpi_on_side(true,  600 + kw_config.spd_l * 300);
+    pointing_device_set_cpi_on_side(false, 600 + kw_config.spd_r * 300);
     set_auto_mouse_enable(kw_config.auto_mouse);
 
     pointing_device_init_user();
@@ -552,8 +552,8 @@ void is_slow_mode(bool is_slow_mode){
         pointing_device_set_cpi_on_side(true,  CPI_SLOW);
         pointing_device_set_cpi_on_side(false, CPI_SLOW);
     }else{
-        pointing_device_set_cpi_on_side(true,  1000 + kw_config.spd_l * 250);
-        pointing_device_set_cpi_on_side(false, 1000 + kw_config.spd_r * 250);
+        pointing_device_set_cpi_on_side(true,  600 + kw_config.spd_l * 300);
+        pointing_device_set_cpi_on_side(false, 600 + kw_config.spd_r * 300);
     }
     clear_keyinput();
 }
