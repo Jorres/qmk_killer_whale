@@ -6,18 +6,20 @@
 #define CURSOR_MODE 1
 #define SCROLL_MODE 2
 
+#define TAPPING_TERM 130
+
 //////////////////////
 /*    ユーザー設定    */
 //////////////////////
 
-// 入力モードデフォルト 
+// 入力モードデフォルト
 // KEY_INPUT / CURSOR_MODE / SCROLL_MODE
-#define MODE_DEFAULT_LEFT CURSOR_MODE   
-#define MODE_DEFAULT_RIGHT CURSOR_MODE 
+#define MODE_DEFAULT_LEFT CURSOR_MODE
+#define MODE_DEFAULT_RIGHT CURSOR_MODE
 
 // CPI = 600 + spd * 300 / AMP = 16.0 + (double)spd * 3.0
 #define SPD_OPTION_MAX    7 // 固定: 最大値
-#define SPD_DEFAULT_LEFT  3 
+#define SPD_DEFAULT_LEFT  3
 #define SPD_DEFAULT_RIGHT 3
 
 // 角度 = angle * 12
@@ -34,38 +36,30 @@
 #define AMP_SLOW 4.0
 
 // オートマウスの設定
-#define AUTO_MOUSE_DEFAULT true     // デフォルトのオン/オフ
-#define AUTO_MOUSE_DEFAULT_LAYER 7  // 使用レイヤー
+#define AUTO_MOUSE_DEFAULT false     // デフォルトのオン/オフ
+#define AUTO_MOUSE_DEFAULT_LAYER 2  // 使用レイヤー
 #define AUTO_MOUSE_THRESHOLD 80     // オートマウスが反応する移動量
 #define AUTO_MOUSE_TIME  750        // レイヤー切り替え時間
 #define AUTO_MOUSE_DEBOUNCE 40      // 再度オートマウスさせるまでの時間
 #define AUTO_MOUSE_DELAY 750        // 一般ボタン使用時のオートマウスオフ時間
 
 // ジョイスティク用定数
-#define NO_JOYSTICK_VAL 100         // JSの有無判定閾値
 #define KEY_OFFSET 7                // キー入力閾値
 #define TIMEOUT_KEY 80              // キー入力間隔
-#define JOYSTICK_MOVE_OFFSET 100    // ジョイスティック移動閾値
 #define SCROLL_DIVISOR 100.0        // スクロール用数値調整
-#define JOYSTICK_DIVISOR 40.0       // ジョイスティック用調整用
 
 // OLED設定
 #define OLED_DEFAULT true           // true: レイヤー表示, false: 数値表示
 #define INTERRUPT_TIME 600          // OLED割り込み時間
 
 // RGBレイヤーデフォルト
-#define RGB_LAYER_DEFAULT false
+#define RGB_LAYER_DEFAULT true
 
 // 一時的モード変更タップ判定ms
 #define TERM_TEMP 100
 
 // 斜め入力防止のデフォルト
 #define DPAD_EX_DEFAULT true
-
-
-
-
-
 
 
 /* ハードウェア設定（変更不要） */
@@ -87,8 +81,9 @@
 #define SPLIT_POINTING_ENABLE
 #define POINTING_DEVICE_COMBINED
 #define SPLIT_LAYER_STATE_ENABLE
-#define SELECT_SOFT_SERIAL_SPEED 0
+#define SELECT_SOFT_SERIAL_SPEED 1
 #define POINTING_DEVICE_TASK_THROTTLE_MS 4
+
 // RGBLIGHT LAYERS
 #define RGBLIGHT_LAYERS
-#define RGBLIGHT_MAX_LAYERS 10
+#define RGBLIGHT_MAX_LAYERS 4

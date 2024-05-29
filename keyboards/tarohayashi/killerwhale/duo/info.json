@@ -16,7 +16,6 @@
         "pointing_device": true,
         "oled": true,
         "rgblight": true,
-        "midi": true,
         "bootmagic": true
     },
     "bootmagic": {
@@ -28,7 +27,7 @@
     },
     "diode_direction": "COL2ROW",
     "dynamic_keymap": {
-        "layer_count": 10
+        "layer_count": 4
     },
     "encoder": {
         "enabled": true,
@@ -53,7 +52,7 @@
         "usb_detect": {
             "enabled": true,
             "polling_interval": 25,
-            "timeout": 3000
+            "timeout": 4000
         }
     },
     "tapping": {
@@ -63,22 +62,12 @@
         "led_count": 66,
         "split": true,
         "split_count": [33, 33],
-        "max_brightness": 200,
+        "max_brightness": 100,
         "hue_steps": 4,
         "saturation_steps": 4,
         "brightness_steps": 4,
         "sleep": true,
         "animations": {
-            "alternating": true,
-            "breathing": true,
-            "christmas": true,
-            "knight": true,
-            "rainbow_mood": true,
-            "rainbow_swirl": true,
-            "rgb_test": true,
-            "snake": true,
-            "static_gradient": true,
-            "twinkle": true
         }
     },
     "ws2812": {

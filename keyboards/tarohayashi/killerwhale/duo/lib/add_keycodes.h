@@ -15,13 +15,6 @@ enum TH_keycodes{
     SC_UP,
     SC_DOWN,
     SC_RESET,
-    CAPTCHA,
-    SAVE,
-    SAVEAS,
-    NEXTTAB,
-    PREVTAB,
-    CLOSETAB,
-    RSTRTAB,
     L_SPD_I,
     L_SPD_D,
     R_SPD_I,
@@ -37,7 +30,7 @@ enum TH_keycodes{
     INV_SCRL,
     MOD_SCRL,
     AUTO_MOUSE,
-    OLED_MOD
+    OLED_MOD,
 };
 
 bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record);

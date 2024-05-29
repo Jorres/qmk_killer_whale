@@ -5,27 +5,20 @@
 #include "quantum.h"
 #include "config.h"
 
-// ジョイスティックの状態
-enum jsmode{
-    NO_JOYSTICK = 0,
-    JOYSTICK_LEFT,
-    JOYSTICK_RIGHT
-};
-
 // 保存される設定の定義
 typedef union{
     uint32_t raw;
     struct{
         uint8_t spd_l     :3; // ポインター速度 最大値7
-        uint8_t angle_l   :5; // ポインター角度 最大値29 
+        uint8_t angle_l   :5; // ポインター角度 最大値29
         uint8_t pd_mode_l :2; // カーソル移動/スクロールモード/キー入力モード
         bool inv_l        :1; // トラックボール / ジョイスティック左右反転ON/OFF
-        
+
         uint8_t spd_r     :3; // ポインター速度 最大値7
-        uint8_t angle_r   :5; // ポインター角度 最大値59 
+        uint8_t angle_r   :5; // ポインター角度 最大値59
         uint8_t pd_mode_r :2; // カーソル移動/スクロールモード/キー入力モード
         bool inv_r        :1; // トラックボール / ジョイスティック左右反転
-        
+
         bool inv_sc     :1; // スクロールの反転ON/OFF
         bool auto_mouse :1; // オートマウスON/OFF
         bool rgb_layer  :1; // RGBレイヤーON/OFF
@@ -37,7 +30,6 @@ typedef union{
 extern kw_config_t kw_config;
 
 // インターフェース
-uint8_t get_joystick_attached(void);             // ジョイスティックの有無
 void cycle_mode_l(void);                        // モード変更
 void cycle_mode_r(void);
 void is_scroll_mode(bool is_force_scrolling); // 一時的モード変更

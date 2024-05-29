@@ -11,6 +11,7 @@ uint16_t startup_timer;
 bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case CMD_CTL:
+            uprintf("CMD_CTL\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
@@ -28,11 +29,12 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case UNDO:
+            uprintf("UNDO\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
                     tap_code(KC_Z);
-                    unregister_code(KC_LGUI); 
+                    unregister_code(KC_LGUI);
                 } else {
                     register_code(KC_LCTL);
                     tap_code(KC_Z);
@@ -43,6 +45,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case REDO:
+            uprintf("REDO\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LSFT);
@@ -62,6 +65,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case COPY:
+            uprintf("COPY\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
@@ -77,6 +81,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case CUT:
+            uprintf("CUT\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
@@ -92,6 +97,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case PASTE:
+            uprintf("PASTE\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
@@ -107,6 +113,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case SC_UP:
+            uprintf("SC_UP\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
@@ -122,6 +129,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case SC_DOWN:
+            uprintf("SC_DOWN\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
@@ -137,6 +145,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case SC_RESET:
+            uprintf("SC_RESET\n");
             if (record->event.pressed) {
                 if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
                     register_code(KC_LGUI);
@@ -146,119 +155,13 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
                     register_code(KC_LCTL);
                     tap_code(KC_0);
                     unregister_code(KC_LCTL);
-                }
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        case CAPTCHA:
-            if (record->event.pressed) {
-                if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
-                    register_code(KC_LSFT);
-                    register_code(KC_LGUI);
-                    tap_code(KC_4);
-                    unregister_code(KC_LGUI);
-                    unregister_code(KC_LSFT);
-                } else {
-                    register_code(KC_LSFT);
-                    register_code(KC_LGUI);
-                    tap_code(KC_S);
-                    unregister_code(KC_LGUI);
-                    unregister_code(KC_LSFT);
-                }
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        case SAVE:
-            if (record->event.pressed) {
-                if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
-                    register_code(KC_LGUI);
-                    tap_code(KC_S);
-                    unregister_code(KC_LGUI);
-                } else {
-                    register_code(KC_LCTL);
-                    tap_code(KC_S);
-                    unregister_code(KC_LCTL);
-                }
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        case SAVEAS:
-            if (record->event.pressed) {
-                if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
-                    register_code(KC_LSFT);
-                    register_code(KC_LGUI);
-                    tap_code(KC_S);
-                    unregister_code(KC_LGUI);
-                    unregister_code(KC_LSFT);
-                } else {
-                    register_code(KC_LSFT);
-                    register_code(KC_LCTL);
-                    tap_code(KC_S);
-                    unregister_code(KC_LCTL);
-                    unregister_code(KC_LSFT);
-                }
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        case NEXTTAB:
-            if (record->event.pressed) {
-                register_code(KC_LCTL);
-                tap_code(KC_TAB);
-                unregister_code(KC_LCTL);
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        case PREVTAB:
-            if (record->event.pressed) {
-                register_code(KC_LSFT);
-                register_code(KC_LCTL);
-                tap_code(KC_TAB);
-                unregister_code(KC_LCTL);
-                unregister_code(KC_LSFT);
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        case CLOSETAB:
-            if (record->event.pressed) {
-                if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
-                    register_code(KC_LGUI);
-                    tap_code(KC_W);
-                    unregister_code(KC_LGUI);
-                } else {
-                    register_code(KC_LCTL);
-                    tap_code(KC_W);
-                    unregister_code(KC_LCTL);
-                }
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        case RSTRTAB:
-            if (record->event.pressed) {
-                if (detected_host_os() == OS_MACOS || detected_host_os() == OS_IOS){
-                    register_code(KC_LSFT);
-                    register_code(KC_LGUI);
-                    tap_code(KC_T);
-                    unregister_code(KC_LGUI);
-                    unregister_code(KC_LSFT);
-                } else {
-                    register_code(KC_LSFT);
-                    register_code(KC_LCTL);
-                    tap_code(KC_T);
-                    unregister_code(KC_LCTL);
-                    unregister_code(KC_LSFT);
                 }
                 oled_interrupt(keycode);
             }
             return false;
             break;
         case L_SPD_I:
+            uprintf("L_SPD_I\n");
             if (record->event.pressed) {
                 kw_config.spd_l = kw_config.spd_l + 1;
                 if(kw_config.spd_l >= SPD_OPTION_MAX){
@@ -271,6 +174,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case R_SPD_I:
+            uprintf("R_SPD_I\n");
             if (record->event.pressed) {
                 kw_config.spd_r = kw_config.spd_r + 1;
                 if(kw_config.spd_r >= SPD_OPTION_MAX){
@@ -283,6 +187,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case L_SPD_D:
+            uprintf("L_SPD_D\n");
             if (record->event.pressed) {
                 if(kw_config.spd_l > 0){
                     kw_config.spd_l = kw_config.spd_l - 1;
@@ -294,6 +199,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case R_SPD_D:
+            uprintf("R_SPD_D\n");
             if (record->event.pressed) {
                 if(kw_config.spd_r > 0){
                     kw_config.spd_r = kw_config.spd_r - 1;
@@ -305,6 +211,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case L_ANG_I:
+            uprintf("L_ANG_I\n");
             if (record->event.pressed) {
                 kw_config.angle_l = (kw_config.angle_l + 1) % ANGLE_OPTION_MAX;
                 eeconfig_update_kb(kw_config.raw);
@@ -313,6 +220,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case R_ANG_I:
+            uprintf("R_ANG_I\n");
             if (record->event.pressed) {
                 kw_config.angle_r = (kw_config.angle_r + 1) % ANGLE_OPTION_MAX;
                 eeconfig_update_kb(kw_config.raw);
@@ -321,6 +229,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case L_ANG_D:
+            uprintf("L_ANG_D\n");
             if (record->event.pressed) {
                 kw_config.angle_l = (ANGLE_OPTION_MAX + kw_config.angle_l - 1) % ANGLE_OPTION_MAX;
                 eeconfig_update_kb(kw_config.raw);
@@ -329,6 +238,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case R_ANG_D:
+            uprintf("R_ANG_D\n");
             if (record->event.pressed) {
                 kw_config.angle_r = (ANGLE_OPTION_MAX + kw_config.angle_r - 1) % ANGLE_OPTION_MAX;
                 eeconfig_update_kb(kw_config.raw);
@@ -337,6 +247,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case L_INV:
+            uprintf("L_INV\n");
             if (record->event.pressed) {
                 kw_config.inv_l = !kw_config.inv_l;
                 eeconfig_update_kb(kw_config.raw);
@@ -345,6 +256,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case R_INV:
+            uprintf("R_INV\n");
             if (record->event.pressed) {
                 kw_config.inv_r = !kw_config.inv_r;
                 eeconfig_update_kb(kw_config.raw);
@@ -353,6 +265,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case INV_SCRL:
+            uprintf("INV_SCRL\n");
             if (record->event.pressed) {
                 kw_config.inv_sc = !kw_config.inv_sc;
                 eeconfig_update_kb(kw_config.raw);
@@ -361,6 +274,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case L_CHMOD:
+            uprintf("L_CHMOD\n");
             if (record->event.pressed) {
                 cycle_mode_l();
                 oled_interrupt(keycode);
@@ -368,6 +282,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case R_CHMOD:
+            uprintf("R_CHMOD\n");
             if (record->event.pressed) {
                 cycle_mode_r();
                 oled_interrupt(keycode);
@@ -375,6 +290,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case AUTO_MOUSE:
+            uprintf("AUTO_MOUSE\n");
             if (record->event.pressed) {
                 kw_config.auto_mouse = !kw_config.auto_mouse;
                 set_auto_mouse_enable(kw_config.auto_mouse);
@@ -384,6 +300,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case OLED_MOD:
+            uprintf("OLED_MOD\n");
             if (record->event.pressed) {
                 kw_config.oled_mode = !kw_config.oled_mode;
                 oled_clear();
@@ -392,203 +309,9 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
         case MOD_SCRL:
+            uprintf("MOD_SCRL\n");
             is_scroll_mode(record->event.pressed);
             oled_tempch(record->event.pressed, keycode);
-            return false;
-            break;
-        // ESC SCROLL
-        case QK_USER_0:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_scroll_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_scroll_mode(false);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_ESC);  
-                }
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // TAB SCROLL
-        case QK_USER_1:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_scroll_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_scroll_mode(false);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_TAB);  
-                }
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // Lang1 SCROLL
-        case QK_USER_2:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_scroll_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_scroll_mode(false);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_LNG1);  
-                }
-                oled_tempch(record->event.pressed, keycode);           
-            }
-            return false;
-            break;
-        // Lang2 SCROLL
-        case QK_USER_3:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_scroll_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_scroll_mode(false);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_LNG2);  
-                }
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // SLOW MODE
-        case QK_USER_4:
-            is_slow_mode(record->event.pressed);
-            oled_tempch(record->event.pressed, keycode);
-            return false;
-            break;
-        // ESC SLOW
-        case QK_USER_5:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_slow_mode(record->event.pressed);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_slow_mode(record->event.pressed);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_ESC);  
-                }
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // TAB SLOW
-        case QK_USER_6:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_slow_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_slow_mode(false);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_TAB);  
-                }
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // Lang1 SLOW
-        case QK_USER_7:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_slow_mode(true);
-                oled_tempch(record->event.pressed, keycode);    
-            } else {
-                is_slow_mode(false);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_LNG1);  
-                }
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // Lang2 SLOW
-        case QK_USER_8:
-            if (record->event.pressed) {
-                startup_timer = timer_read();
-                is_slow_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_slow_mode(false);
-                if(timer_elapsed(startup_timer) < TERM_TEMP){
-                    tap_code(KC_LNG2);  
-                }
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // BTN1 SLOW
-        case QK_USER_9:
-            if (record->event.pressed) {
-                register_code(KC_BTN1);
-                is_slow_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_slow_mode(false);
-                unregister_code(KC_BTN1);
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // BTN2 SLOW
-        case QK_USER_10:
-            if (record->event.pressed) {
-                register_code(KC_BTN2);
-                is_slow_mode(true);
-                oled_interrupt(QK_USER_4);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_slow_mode(false);
-                unregister_code(KC_BTN2);
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // BTN3 SLOW
-        case QK_USER_11:
-            if (record->event.pressed) {
-                register_code(KC_BTN3);
-                is_slow_mode(true);
-                oled_tempch(record->event.pressed, keycode);
-            } else {
-                is_slow_mode(false);
-                unregister_code(KC_BTN3);
-                oled_tempch(record->event.pressed, keycode);
-            }
-            return false;
-            break;
-        // 押している間カーソル移動
-        case QK_USER_12:
-            is_cursor_mode(record->event.pressed);
-            oled_tempch(record->event.pressed, keycode);
-            return false;
-            break;
-        // 押している間キー入力
-        case QK_USER_13:
-            is_key_mode(record->event.pressed);
-            oled_tempch(record->event.pressed, keycode);
-            return false;
-            break;
-        // 十字キー同時押しオンオフ
-        case QK_USER_14:
-            if (record->event.pressed) {
-                toggle_dpad_exclusion();
-                oled_interrupt(keycode);
-            }
-            return false;
-            break;
-        // RGBレイヤーオンオフ
-        case QK_USER_15:
-            if (record->event.pressed) {
-                kw_config.rgb_layer = !kw_config.rgb_layer;
-                eeconfig_update_kb(kw_config.raw); 
-                oled_interrupt(keycode);
-            }
             return false;
             break;
     }
