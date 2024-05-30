@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-#define KEY_INPUT 0
-#define CURSOR_MODE 1
-#define SCROLL_MODE 2
+#define CURSOR_MODE 0
+#define SCROLL_MODE 1
 
 #define TAPPING_TERM 130
 
@@ -27,8 +26,8 @@
 #define ANGLE_DEFAULT_LEFT  8
 #define ANGLE_DEFAULT_RIGHT 7
 
-#define INVERT_LEFT_DEFAULT true            // X軸の反転
-#define INVERT_RIGHT_DEFAULT true
+#define INVERT_LEFT_DEFAULT false            // X軸の反転
+#define INVERT_RIGHT_DEFAULT false
 #define INVERT_SCROLL_DEFAULT false          // スクロールの反転
 
 // スローモード時カーソル速度
@@ -62,6 +61,7 @@
 #define DPAD_EX_DEFAULT true
 
 
+
 /* ハードウェア設定（変更不要） */
 // SPI SETTINGS
 #define PMW33XX_CS_PIN  GP0
@@ -74,7 +74,7 @@
 #define I2C1_SDA_PIN        GP8
 #define OLED_FONT_H "./lib/glcdfont.c"
 // AUTO MOUSE
-#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+// #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 // SPLIT SETTINGS
 #define SPLIT_HAND_PIN GP10
 #define SPLIT_HAND_PIN_LOW_IS_LEFT

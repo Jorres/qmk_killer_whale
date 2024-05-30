@@ -77,26 +77,32 @@ void eeconfig_init_kb(void) {
 
 /* キースキャン */
 // マウスキー登録
-bool is_mouse_record_kb(uint16_t keycode, keyrecord_t* record) {
-    switch(keycode) {
-        case MOD_SCRL: // 一時的にスクロール
-            return true;
-        case QK_USER_4: // 一時的に減速
-            return true;
-        case QK_USER_9: // マウス1 / 長押しスロー
-            return true;
-        case QK_USER_10: // マウス2 / 長押しスロー
-            return true;
-        case QK_USER_11: // マウス3 / 長押しスロー
-            return true;
-        case QK_USER_12: // 一時的にカーソル移動
-            return true;
-        default:
-            return false;
-    }
+// bool is_mouse_record_kb(uint16_t keycode, keyrecord_t* record) {
+//     switch(keycode) {
+//         case MOD_SCRL: // 一時的にスクロール
+//             return true;
+//         case QK_USER_4: // 一時的に減速
+//             return true;
+//         case QK_USER_9: // マウス1 / 長押しスロー
+//             return true;
+//         case QK_USER_10: // マウス2 / 長押しスロー
+//             return true;
+//         case QK_USER_11: // マウス3 / 長押しスロー
+//             return true;
+//         case QK_USER_12: // 一時的にカーソル移動
+//             return true;
+//         default:
+//             return false;
+//     }
 
-    return  is_mouse_record_user(keycode, record);
-}
+//     return  is_mouse_record_user(keycode, record);
+// }
+
+
+// bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
+//     return false;
+// }
+
 // 実タスク
 bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
     keypos_t key = record->event.key;
@@ -191,7 +197,7 @@ void pointing_device_init_kb(void){
     scroll_accumulated_r_v = 0;
     pointing_device_set_cpi_on_side(true,  600 + kw_config.spd_l * 300);
     pointing_device_set_cpi_on_side(false, 600 + kw_config.spd_r * 300);
-    set_auto_mouse_enable(kw_config.auto_mouse);
+    // set_auto_mouse_enable(kw_config.auto_mouse);
 
     pointing_device_init_user();
 }
@@ -249,7 +255,7 @@ report_mouse_t pointing_device_task_combined_user(report_mouse_t left_report, re
         left_report.h = 0;
         left_report.v = 0;
     // キー入力処理
-    }else if(force_key_input || kw_config.pd_mode_l == KEY_INPUT){
+    }else if(force_key_input){
         // 入力キーの座標指定
         left_report.x = 0;
         left_report.y = 0;
@@ -319,7 +325,7 @@ report_mouse_t pointing_device_task_combined_user(report_mouse_t left_report, re
         right_report.h = 0;
         right_report.v = 0;
     // キー入力処理
-    }else if(force_key_input || kw_config.pd_mode_r == KEY_INPUT){
+    }else if(force_key_input){
         // 入力キーの座標指定
         right_report.x = 0;
         right_report.y = 0;
@@ -396,13 +402,13 @@ void clear_keyinput(void){
 /* インターフェース */
 // モード変更
 void cycle_mode_l(void){
-    kw_config.pd_mode_l = (kw_config.pd_mode_l + 1) % 3;
-    eeconfig_update_kb(kw_config.raw);
+    kw_config.pd_mode_l = (kw_config.pd_mode_l + 1) % 2;
+    // eeconfig_update_kb(kw_config.raw);
     clear_keyinput();
 }
 void cycle_mode_r(void){
-    kw_config.pd_mode_r = (kw_config.pd_mode_r + 1) % 3;
-    eeconfig_update_kb(kw_config.raw);
+    kw_config.pd_mode_r = (kw_config.pd_mode_r + 1) % 2;
+    // eeconfig_update_kb(kw_config.raw);
     clear_keyinput();
 }
 // 一時的モード変更

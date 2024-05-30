@@ -40,8 +40,6 @@ bool oled_task_addedoled(void) {
                         oled_write_P(PSTR("SCROLL MODE LEFT     "), false);
                     }else if(kw_config.pd_mode_l == CURSOR_MODE){
                         oled_write_P(PSTR("CURSOR MODE LEFT     "), false);
-                    }else if(kw_config.pd_mode_l == KEY_INPUT){
-                        oled_write_P(PSTR("KEY INPUT MODE LEFT  "), false);
                     }
                     break;
                 case R_CHMOD:
@@ -49,8 +47,6 @@ bool oled_task_addedoled(void) {
                         oled_write_P(PSTR("SCROLL MODE RIGHT    "), false);
                     }else if(kw_config.pd_mode_r == CURSOR_MODE){
                         oled_write_P(PSTR("CURSOR MODE RIGHT    "), false);
-                    }else if(kw_config.pd_mode_r == KEY_INPUT){
-                        oled_write_P(PSTR("KEY INPUT MODE RIGHT "), false);
                     }
                     break;
                 case AUTO_MOUSE:

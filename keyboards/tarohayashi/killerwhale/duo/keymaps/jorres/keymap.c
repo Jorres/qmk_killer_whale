@@ -3,10 +3,11 @@
 
 enum layer_number {
     BASE = 0,
-    ARROWS_NUMBERS,
+    ARROWS,
     MOUSE,
     NAVIGATION,
     SYMBOLS,
+    NUMBERS,
 };
 
 enum custom_keycodes {
@@ -41,42 +42,43 @@ enum custom_keycodes {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
-        KC_TAB,  KC_Q,      KC_ESC,             TO(ARROWS_NUMBERS), _______, _______,
-        KC_LCTL, KC_A,      KC_W,               KC_E, KC_R, KC_T,
-        KC_LSFT, KC_Z,      KC_S,               KC_D, KC_F, KC_G,
-                 _______, KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
+        KC_TAB,  KC_Q,      KC_ESC,           MO(NUMBERS), _______, R_CHMOD,
+        KC_LCTL, KC_A,      KC_W,             KC_E, KC_R, KC_T,
+        KC_LSFT, KC_Z,      KC_S,             KC_D, KC_F, KC_G,
+                 _______,   LT(ARROWS, KC_X), KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
                             MO(NAVIGATION),
         LT(SYMBOLS, KC_SPC), KC_ENT,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                    _______,
 
+
         // 右手
-        _______, _______, TO(ARROWS_NUMBERS), _______,          KC_P,    KC_LBRC,
-        KC_Y,    KC_U,    I_ESC,              KC_O,             KC_SCLN, KC_QUOT,
-        KC_H,    KC_J,    KC_K,               KC_L,             KC_SLSH, KC_RSFT,
-        KC_N,    KC_M,    KC_COMM,            KC_DOT,           MACRO_CHANGE_LANG,
+        R_CHMOD, _______, _______, KC_0,   KC_P,    KC_LBRC,
+        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_SCLN, KC_QUOT,
+        KC_H,    KC_J,    KC_K,    KC_L,    LT(MOUSE, KC_SLSH), KC_RSFT,
+        KC_N,    KC_M,    KC_COMM, LT(ARROWS, KC_DOT),           MACRO_CHANGE_LANG,
                                               MO(NAVIGATION),
         KC_ENT,  LT(SYMBOLS, KC_BSPC),
         KC_UP,   KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
         _______, _______,                     _______
     ),
-    [ARROWS_NUMBERS] = LAYOUT(
+    [ARROWS] = LAYOUT(
         // 左手
-        _______, KC_1,    _______, TO(BASE), _______,  _______,
-        _______, _______, KC_2,    KC_3,    KC_4,     KC_5,
-        _______, _______, _______, _______, _______,  KC_LEFT,
-                 _______, _______, _______, _______,  KC_DOWN,
+        _______, _______, _______, TO(BASE), _______,  _______,
+        _______, _______, _______, _______, _______,  _______,
+        _______, _______, _______, _______, KC_LEFT,  KC_LEFT,
+                 _______, _______, _______, KC_DOWN,  KC_DOWN,
                           _______,
         _______, _______,
         _______, _______, _______, _______,          _______,
         _______, _______,                            _______,
 
         // 右手
-        _______,  _______, TO(BASE), _______, KC_0,    _______,
-        KC_6,     KC_7,    KC_8,    KC_9,    _______, _______,
-        KC_RIGHT, _______, _______, _______, _______, _______,
-        KC_UP,    _______, _______, _______, _______,
-                                   _______,
+        _______,  _______,  TO(BASE), _______, _______, _______,
+        _______,  _______,  _______,  _______, _______, _______,
+        KC_RIGHT, KC_RIGHT, _______,  _______, _______, _______,
+        KC_UP,    KC_UP,    _______,  _______, _______,
+                                      _______,
 
         _______, _______,
         _______, _______, _______, _______,          _______,
@@ -86,7 +88,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         // 左手
         _______, _______, _______, TO(BASE), _______,  _______,
         _______, _______, _______, _______,  _______,  _______,
-        _______, _______, _______, KC_MS_BTN2, KC_MS_BTN1, MOD_SCRL,
+        _______, KC_Z,    KC_S,    KC_MS_BTN2, KC_MS_BTN1, MOD_SCRL, // Z and S for Win combo
                  _______, _______, _______, _______, _______,
                           MOD_SCRL,
         _______, _______,
@@ -104,18 +106,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [NAVIGATION] = LAYOUT(
         // 左手
-        _______, TMUX_1,  KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
-        _______, _______, TMUX_2,  TMUX_3,  TMUX_4,  TMUX_5,
+        _______, _______, KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
+        _______, TMUX_1,  TMUX_2,  TMUX_3,  TMUX_4,  TMUX_5,
         _______, _______, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XXX,
-                 _______, _______, _______, _______, _______,
+                 _______, _______, _______, _______, TM_SESS,
                           KC_TRNS,
         BRO_LEF, BRO_NEW,
         _______, _______, _______, _______,          _______,
         _______, _______,                            _______,
 
         // 右手
-        _______, _______, _______, _______, TMUX_10, TO(BASE),
-        TMUX_6,  TMUX_7,  TMUX_8,  TMUX_9,  _______, _______,
+        _______, _______, _______, _______, _______, TO(BASE),
+        TMUX_6,  TMUX_7,  TMUX_8,  TMUX_9,  TMUX_10, _______,
         _______, _______, _______, _______, _______, _______,
         _______, TM_NWIN, _______, _______, _______,
                                    KC_TRNS,
@@ -143,51 +145,35 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,
         _______, _______, _______, _______,          _______,
         _______, _______,                            _______
+    ),
+    [NUMBERS] = LAYOUT(
+        // 左手
+        _______, _______, _______,  _______, _______, _______,
+        _______, _______, _______,  _______, _______, KC_LEFT,
+        _______, _______, _______,  _______, _______, KC_UP,
+                 _______, _______,  _______, _______, KC_DOWN,
+                          _______,
+        _______, _______,
+        _______, _______, _______,  _______,          _______,
+        _______, _______,                             _______,
+
+
+        // 右手
+        _______, _______, _______, _______, _______, TO(BASE),
+        KC_RIGHT, KC_7,   KC_8,    KC_9,   _______, _______,
+        KC_UP,    KC_4,   KC_5,    KC_6,   KC_0, _______,
+        KC_DOWN,  KC_1,   KC_2,    KC_3,   KC_0,
+                                   _______,
+        _______, _______,
+        _______, _______, _______, _______,          _______,
+        _______, _______,                            _______
     )
-    // [BALL_SETTINGS] = LAYOUT(
-    //     // 左手
-    //     XXXXXXX,    XXXXXXX, XXXXXXX, QK_USER_14, _______, L_CHMOD,
-    //     XXXXXXX,    XXXXXXX, XXXXXXX, XXXXXXX, L_SPD_I, XXXXXXX,
-    //     AUTO_MOUSE, XXXXXXX, XXXXXXX, L_ANG_D, L_INV,   L_ANG_I,
-    //                 XXXXXXX, XXXXXXX,XXXXXXX, L_SPD_D, XXXXXXX,
-    //                          INV_SCRL,
-    //     XXXXXXX, XXXXXXX,
-    //     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,          XXXXXXX,
-    //     XXXXXXX, INV_SCRL,                           XXXXXXX,
-    //     // 右手
-    //     R_CHMOD, _______, QK_USER_14, XXXXXXX, XXXXXXX, XXXXXXX,
-    //     XXXXXXX, R_SPD_I,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    //     R_ANG_D, R_INV,   R_ANG_I, XXXXXXX, XXXXXXX, AUTO_MOUSE,
-    //     XXXXXXX, R_SPD_D,   XXXXXXX, XXXXXXX, XXXXXXX,
-    //                                  INV_SCRL,
-    //     XXXXXXX, XXXXXXX,
-    //     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,          XXXXXXX,
-    //     XXXXXXX, XXXXXXX,                            XXXXXXX
-    // ),
-    // [LIGHT_SETTINGS] = LAYOUT(
-    //     // 左手
-    //     XXXXXXX, XXXXXXX, XXXXXXX, RGB_MOD, RGB_RMOD, _______,
-    //     XXXXXXX, RGB_SPI, RGB_VAI, RGB_SAI, RGB_HUI, RGB_TOG,
-    //     OLED_MOD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    //              RGB_SPD, RGB_VAD, RGB_SAD, RGB_HUD, XXXXXXX,
-    //                       QK_USER_15,
-    //     RGB_MOD, RGB_RMOD,
-    //     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,          XXXXXXX,
-    //     XXXXXXX, XXXXXXX,                            XXXXXXX,
-    //     // 右手
-    //     _______, RGB_MOD, RGB_RMOD, XXXXXXX, XXXXXXX, XXXXXXX,
-    //     RGB_TOG, RGB_HUI, RGB_SAI, RGB_VAI, RGB_SPI, XXXXXXX,
-    //     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, OLED_MOD,
-    //     XXXXXXX, RGB_HUD, RGB_SAD, RGB_VAD, RGB_SPD,
-    //                                QK_USER_15,
-    //     RGB_RMOD, RGB_MOD,
-    //     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,          XXXXXXX,
-    //     XXXXXXX, XXXXXXX,                            XXXXXXX
-    // )
 };
 
 const uint16_t PROGMEM lgui[] = {KC_Z, KC_S, COMBO_END};
+const uint16_t PROGMEM lkm[] = {KC_J, KC_L, COMBO_END};
 combo_t key_combos[] = {
+    COMBO(lkm, KC_MS_BTN1),
     COMBO(lgui, KC_LGUI),
 };
 
@@ -206,11 +192,17 @@ bool oled_task_user(void) {
         case BASE:
             oled_write_ln_P(PSTR("BASE"), false);
             break;
-        case ARROWS_NUMBERS:
+        case ARROWS:
             oled_write_ln_P(PSTR("ARROWS"), false);
             break;
         case MOUSE:
             oled_write_ln_P(PSTR("MOUSE"), false);
+            break;
+        case SYMBOLS:
+            oled_write_ln_P(PSTR("SYMBOLS"), false);
+            break;
+        case NUMBERS:
+            oled_write_ln_P(PSTR("NUMBERS"), false);
             break;
         case NAVIGATION:
             oled_write_ln_P(PSTR("NAVIGATION"), false);
@@ -232,23 +224,32 @@ bool oled_task_user(void) {
 }
 
 
-void pointing_device_init_user(void){
-    set_auto_mouse_layer(MOUSE);
+// void pointing_device_init_user(void){
+//     set_auto_mouse_layer(MOUSE);
+// }
+
+static uint16_t i_esc_timer = 0;
+static bool i_esc_pressed = false;
+
+void matrix_scan_user(void) {
+    if (i_esc_pressed && timer_elapsed(i_esc_timer) >= TAPPING_TERM) {
+        i_esc_pressed = false;
+        tap_code(KC_ESC);
+    }
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    static uint16_t i_esc_timer;
     switch (keycode) {
     case I_ESC:
         uprintf("I_ESC\n");
         if (record->event.pressed) {
             i_esc_timer = timer_read();
+            i_esc_pressed = true;
         } else {
             if (timer_elapsed(i_esc_timer) < TAPPING_TERM) {
                 tap_code(KC_I);
-            } else {
-                tap_code(KC_ESC);
             }
+            i_esc_pressed = false;
         }
         return false;
     case MACRO_CHANGE_LANG:

@@ -293,7 +293,7 @@ bool process_record_addedkeycodes(uint16_t keycode, keyrecord_t *record) {
             uprintf("AUTO_MOUSE\n");
             if (record->event.pressed) {
                 kw_config.auto_mouse = !kw_config.auto_mouse;
-                set_auto_mouse_enable(kw_config.auto_mouse);
+                // set_auto_mouse_enable(kw_config.auto_mouse);
                 eeconfig_update_kb(kw_config.raw);
                 oled_interrupt(keycode);
             }
