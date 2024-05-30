@@ -26,8 +26,8 @@
 #define ANGLE_DEFAULT_LEFT  8
 #define ANGLE_DEFAULT_RIGHT 7
 
-#define INVERT_LEFT_DEFAULT false            // X軸の反転
-#define INVERT_RIGHT_DEFAULT false
+#define INVERT_LEFT_DEFAULT true            // X軸の反転
+#define INVERT_RIGHT_DEFAULT true
 #define INVERT_SCROLL_DEFAULT false          // スクロールの反転
 
 // スローモード時カーソル速度

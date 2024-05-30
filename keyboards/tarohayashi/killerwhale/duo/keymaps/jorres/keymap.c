@@ -3,7 +3,6 @@
 
 enum layer_number {
     BASE = 0,
-    ARROWS,
     MOUSE,
     NAVIGATION,
     SYMBOLS,
@@ -11,7 +10,7 @@ enum layer_number {
 };
 
 enum custom_keycodes {
-    MACRO_CHANGE_LANG = SAFE_RANGE,
+    LANG = SAFE_RANGE,
     TMUX_1,
     TMUX_2,
     TMUX_3,
@@ -24,6 +23,7 @@ enum custom_keycodes {
     TMUX_10,
 
     TM_NWIN,
+    TM_SESS,
 
     BRO_LEF,
     BRO_RIG,
@@ -35,6 +35,8 @@ enum custom_keycodes {
     NAV_TEL,
     NAV_XXX,
 
+    PRTSCR,
+
     I_ESC,
 };
 
@@ -42,47 +44,25 @@ enum custom_keycodes {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
-        KC_TAB,  KC_Q,      KC_ESC,           MO(NUMBERS), _______, R_CHMOD,
+        KC_TAB,  KC_Q,      _______,          MO(NUMBERS), _______, _______,
         KC_LCTL, KC_A,      KC_W,             KC_E, KC_R, KC_T,
         KC_LSFT, KC_Z,      KC_S,             KC_D, KC_F, KC_G,
-                 _______,   LT(ARROWS, KC_X), KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
+                 _______,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
                             MO(NAVIGATION),
         LT(SYMBOLS, KC_SPC), KC_ENT,
-        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+        _______, _______, R_CHMOD, _______,  _______, // <--- first 3 blanks are candidates for filling
         _______, _______,                    _______,
 
 
         // 右手
-        R_CHMOD, _______, _______, KC_0,   KC_P,    KC_LBRC,
-        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_SCLN, KC_QUOT,
-        KC_H,    KC_J,    KC_K,    KC_L,    LT(MOUSE, KC_SLSH), KC_RSFT,
-        KC_N,    KC_M,    KC_COMM, LT(ARROWS, KC_DOT),           MACRO_CHANGE_LANG,
-                                              MO(NAVIGATION),
+        PRTSCR,  _______, _______, KC_0,    LANG, KC_LBRC,
+        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P, KC_QUOT,
+        KC_H,    KC_J,    KC_K,    KC_L,    LT(MOUSE, KC_SCLN), KC_RSFT,
+        KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
+                                            MO(NAVIGATION),
         KC_ENT,  LT(SYMBOLS, KC_BSPC),
-        KC_UP,   KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
-    ),
-    [ARROWS] = LAYOUT(
-        // 左手
-        _______, _______, _______, TO(BASE), _______,  _______,
-        _______, _______, _______, _______, _______,  _______,
-        _______, _______, _______, _______, KC_LEFT,  KC_LEFT,
-                 _______, _______, _______, KC_DOWN,  KC_DOWN,
-                          _______,
-        _______, _______,
-        _______, _______, _______, _______,          _______,
-        _______, _______,                            _______,
-
-        // 右手
-        _______,  _______,  TO(BASE), _______, _______, _______,
-        _______,  _______,  _______,  _______, _______, _______,
-        KC_RIGHT, KC_RIGHT, _______,  _______, _______, _______,
-        KC_UP,    KC_UP,    _______,  _______, _______,
-                                      _______,
-
-        _______, _______,
-        _______, _______, _______, _______,          _______,
-        _______, _______,                            _______
     ),
     [MOUSE] = LAYOUT(
         // 左手
@@ -128,9 +108,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [SYMBOLS] = LAYOUT(
         // 左手
         _______, _______, _______,  _______, _______, _______,
-        _______, _______, KC_EQUAL, KC_BSLS, KC_PIPE, _______,
-        _______, KC_ASTR, KC_GRV,   KC_DLR,  KC_AT,    KC_EXLM,
-                 KC_CIRC, KC_MINS,  KC_LABK, KC_RABK, _______,
+        _______, KC_ASTR, KC_EQUAL, KC_BSLS, KC_PIPE, _______,
+        _______, KC_CIRC, KC_GRV,   KC_DLR,  KC_AT,    KC_EXLM,
+                 _______, KC_MINS,  KC_LABK, KC_RABK, _______,
                           _______,
         _______, _______,
         _______, _______, _______,  _______,          _______,
@@ -192,9 +172,6 @@ bool oled_task_user(void) {
         case BASE:
             oled_write_ln_P(PSTR("BASE"), false);
             break;
-        case ARROWS:
-            oled_write_ln_P(PSTR("ARROWS"), false);
-            break;
         case MOUSE:
             oled_write_ln_P(PSTR("MOUSE"), false);
             break;
@@ -224,10 +201,6 @@ bool oled_task_user(void) {
 }
 
 
-// void pointing_device_init_user(void){
-//     set_auto_mouse_layer(MOUSE);
-// }
-
 static uint16_t i_esc_timer = 0;
 static bool i_esc_pressed = false;
 
@@ -240,6 +213,32 @@ void matrix_scan_user(void) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
+    case TM_SESS:
+        uprintf("TM_SESS\n");
+        if (record->event.pressed) {
+            register_code(KC_LCTL);
+            register_code(KC_A);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_A);
+            register_code(KC_LSFT);
+            register_code(KC_0);
+        } else {
+            unregister_code(KC_LSFT);
+            unregister_code(KC_0);
+        }
+        return false;
+    case PRTSCR:
+        uprintf("PRTSCR\n");
+        if (record->event.pressed) {
+            register_code(KC_LCTL);
+            register_code(KC_LSFT);
+            register_code(KC_BSLS);
+        } else {
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LSFT);
+            unregister_code(KC_BSLS);
+        }
+        return false;
     case I_ESC:
         uprintf("I_ESC\n");
         if (record->event.pressed) {
@@ -252,8 +251,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             i_esc_pressed = false;
         }
         return false;
-    case MACRO_CHANGE_LANG:
-        uprintf("MACRO_CHANGE_LANG\n");
+    case LANG:
+        uprintf("LANG\n");
         if (record->event.pressed) {
             register_code(KC_LGUI);
             register_code(KC_SPC);
