@@ -32,6 +32,8 @@ extern kw_config_t kw_config;
 // インターフェース
 void cycle_mode_l(void);                        // モード変更
 void cycle_mode_r(void);
+void set_scroll_mode(void);
+void unset_scroll_mode(void);
 void is_scroll_mode(bool is_force_scrolling); // 一時的モード変更
 void is_cursor_mode(bool is_force_scrolling);
 void is_key_mode(bool is_force_key_input);

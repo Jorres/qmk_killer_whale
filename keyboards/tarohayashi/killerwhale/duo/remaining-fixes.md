@@ -9,7 +9,18 @@
 
 - fix a `ni` issue (nullify timer)
 
+- enable scroll mode on dpad press and hold
+
+- moving language select this far is a bad move
+
+- enable f11 (kitty expansion as a consequence)
+
+## Not flashed
+
+
 ## You are here
+
+- for japanese, enable selecting a language accurately, like on moonlander. Combo invocation of LGUI does not seem to work
 
 - find a transistor and pray my button will work, so I can shift QAZ column one down (author was correct,
   I should not have raised the column for no reason lol. Chesterton's fence).

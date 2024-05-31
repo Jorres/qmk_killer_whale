@@ -1,9 +1,9 @@
 #include QMK_KEYBOARD_H
 #include "lib/add_keycodes.h"
+#include "lib/common_killerwhale.h"
 
 enum layer_number {
     BASE = 0,
-    MOUSE,
     NAVIGATION,
     SYMBOLS,
     NUMBERS,
@@ -41,6 +41,8 @@ enum custom_keycodes {
     PRTSCR,
 
     I_ESC,
+
+    DPAD_LEFT,
 };
 
 // キーマップの設定
@@ -53,39 +55,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                  _______,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
                             MO(NAVIGATION),
         LT(SYMBOLS, KC_SPC), KC_ENT,
-        _______, _______, R_CHMOD, _______,  _______, // <--- first 3 blanks are candidates for filling
+        _______, _______, DPAD_LEFT, R_CHMOD,  _______, // <--- first 3 blanks are candidates for filling
         _______, _______,                    _______,
 
 
         // 右手
-        PRTSCR,  _______, _______, KC_0,    LANG, KC_RSFT,
+        PRTSCR,  KC_F11,  _______, KC_0,    _______, KC_RSFT,
         KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P, KC_LBRC,
         KC_H,    KC_J,    KC_K,    KC_L,    LT(MOUSE, KC_SCLN), KC_QUOT,
         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
                                             MO(NAVIGATION),
-        LT(SYMBOLS, KC_BSPC), KC_ENT,
+        LT(SYMBOLS, KC_BSPC), LANG,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
-    ),
-    [MOUSE] = LAYOUT(
-        // 左手
-        _______, _______, _______, TO(BASE), _______,  _______,
-        _______, _______, _______, _______,  _______,  _______,
-        _______, KC_Z,    KC_S,    KC_MS_BTN2, KC_MS_BTN1, MOD_SCRL, // Z and S for Win combo
-                 _______, _______, _______, _______, _______,
-                          MOD_SCRL,
-        _______, _______,
-        _______, _______, _______, _______,          _______,
-        _______, _______,                            _______,
-        // 右手
-        _______, _______, TO(BASE), _______, _______, _______,
-        _______, _______, _______,  _______, _______, _______,
-        MOD_SCRL, KC_MS_BTN1, KC_MS_BTN2, _______, _______, _______,
-        _______, _______, _______, _______, _______,
-                                   MOD_SCRL,
-        _______, _______,
-        _______, _______, _______, _______,          _______,
-        _______, _______,                            _______
     ),
     [NAVIGATION] = LAYOUT(
         // 左手
@@ -155,6 +137,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 const uint16_t PROGMEM lgui[] = {KC_Z, KC_S, COMBO_END};
 const uint16_t PROGMEM lkm[] = {KC_J, KC_L, COMBO_END};
+const uint16_t PROGMEM pkm[] = {KC_J, KC_SCLN, COMBO_END};
 
 const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_P, COMBO_END};
 const uint16_t PROGMEM tmux_search[] = {KC_M, KC_P, COMBO_END};
@@ -162,6 +145,7 @@ const uint16_t PROGMEM tmux_copy[] = {KC_U, KC_P, COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(lkm, KC_MS_BTN1),
+    COMBO(pkm, KC_MS_BTN2),
     COMBO(lgui, KC_LGUI),
 
     COMBO(tmux_highlight, TMUX_HIGHLIGHT),
@@ -230,6 +214,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+    case DPAD_LEFT:
+        uprintf("DPAD_LEFT\n");
+        if (record->event.pressed) {
+            // register_code(KC_LEFT);
+            set_scroll_mode();
+        } else {
+            // unregister_code(KC_LEFT);
+            unset_scroll_mode();
+        }
+        return false;
     case TMUX_COPY:
         uprintf("TMUX_COPY\n");
         if (record->event.pressed) {

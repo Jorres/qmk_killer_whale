@@ -416,6 +416,14 @@ void is_scroll_mode(bool is_force_scrolling){
     force_scrolling = is_force_scrolling;
     clear_keyinput();
 }
+void set_scroll_mode(void){
+    force_scrolling = true;
+    clear_keyinput();
+}
+void unset_scroll_mode(void){
+    force_scrolling = false;
+    clear_keyinput();
+}
 void is_cursor_mode(bool is_force_cursoring){
     force_cursoring = is_force_cursoring;
     clear_keyinput();
