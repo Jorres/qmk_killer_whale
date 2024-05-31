@@ -24,6 +24,9 @@ enum custom_keycodes {
 
     TM_NWIN,
     TM_SESS,
+    TMUX_COPY,
+    TMUX_SEARCH,
+    TMUX_HIGHLIGHT,
 
     BRO_LEF,
     BRO_RIG,
@@ -55,12 +58,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
         // 右手
-        PRTSCR,  _______, _______, KC_0,    LANG, KC_LBRC,
-        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P, KC_QUOT,
-        KC_H,    KC_J,    KC_K,    KC_L,    LT(MOUSE, KC_SCLN), KC_RSFT,
+        PRTSCR,  _______, _______, KC_0,    LANG, KC_RSFT,
+        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P, KC_LBRC,
+        KC_H,    KC_J,    KC_K,    KC_L,    LT(MOUSE, KC_SCLN), KC_QUOT,
         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
                                             MO(NAVIGATION),
-        KC_ENT,  LT(SYMBOLS, KC_BSPC),
+        LT(SYMBOLS, KC_BSPC), KC_ENT,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
     ),
@@ -152,9 +155,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 const uint16_t PROGMEM lgui[] = {KC_Z, KC_S, COMBO_END};
 const uint16_t PROGMEM lkm[] = {KC_J, KC_L, COMBO_END};
+
+const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_P, COMBO_END};
+const uint16_t PROGMEM tmux_search[] = {KC_M, KC_P, COMBO_END};
+const uint16_t PROGMEM tmux_copy[] = {KC_U, KC_P, COMBO_END};
+
 combo_t key_combos[] = {
     COMBO(lkm, KC_MS_BTN1),
     COMBO(lgui, KC_LGUI),
+
+    COMBO(tmux_highlight, TMUX_HIGHLIGHT),
+    COMBO(tmux_search, TMUX_SEARCH),
+    COMBO(tmux_copy, TMUX_COPY),
 };
 
 void keyboard_post_init_user(void) {
@@ -212,7 +224,53 @@ void matrix_scan_user(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (keycode != I_ESC && i_esc_pressed) {
+        i_esc_pressed = false;
+        tap_code(KC_I);
+    }
+
     switch (keycode) {
+    case TMUX_COPY:
+        uprintf("TMUX_COPY\n");
+        if (record->event.pressed) {
+            register_code(KC_LCTL);
+            register_code(KC_A);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_A);
+            register_code(KC_LSFT);
+            register_code(KC_S);
+        } else {
+            unregister_code(KC_LSFT);
+            unregister_code(KC_S);
+        }
+        return false;
+    case TMUX_SEARCH:
+        uprintf("TMUX_SEARCH\n");
+        if (record->event.pressed) {
+            register_code(KC_LCTL);
+            register_code(KC_A);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_A);
+            tap_code(KC_LBRC);
+            register_code(KC_LCTL);
+            register_code(KC_SLSH);
+        } else {
+            register_code(KC_LCTL);
+            register_code(KC_SLSH);
+        }
+        return false;
+    case TMUX_HIGHLIGHT:
+        uprintf("TMUX_HIGHLIGHT\n");
+        if (record->event.pressed) {
+            register_code(KC_LCTL);
+            register_code(KC_A);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_A);
+            register_code(KC_LBRC);
+        } else {
+            unregister_code(KC_LBRC);
+        }
+        return false;
     case TM_SESS:
         uprintf("TM_SESS\n");
         if (record->event.pressed) {
@@ -245,7 +303,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             i_esc_timer = timer_read();
             i_esc_pressed = true;
         } else {
-            if (timer_elapsed(i_esc_timer) < TAPPING_TERM) {
+            if (i_esc_pressed && timer_elapsed(i_esc_timer) < TAPPING_TERM) {
                 tap_code(KC_I);
             }
             i_esc_pressed = false;

@@ -70,7 +70,7 @@ void eeconfig_init_kb(void) {
     kw_config.auto_mouse = AUTO_MOUSE_DEFAULT;
     kw_config.rgb_layer = RGB_LAYER_DEFAULT;
     kw_config.oled_mode = OLED_DEFAULT;
-    // eeconfig_update_kb(kw_config.raw);
+    eeconfig_update_kb(kw_config.raw);
 
     eeconfig_init_user();
 }
