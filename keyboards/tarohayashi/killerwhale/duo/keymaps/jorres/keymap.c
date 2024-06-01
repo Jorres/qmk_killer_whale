@@ -62,7 +62,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         // 右手
         PRTSCR,  KC_F11,  _______, KC_0,    _______, KC_RSFT,
         KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P, KC_LBRC,
-        KC_H,    KC_J,    KC_K,    KC_L,    LT(MOUSE, KC_SCLN), KC_QUOT,
+        KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
                                             MO(NAVIGATION),
         LT(SYMBOLS, KC_BSPC), LANG,
@@ -81,7 +81,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,                            _______,
 
         // 右手
-        _______, _______, _______, _______, _______, TO(BASE),
+        _______, _______, _______, _______, _______, _______,
         TMUX_6,  TMUX_7,  TMUX_8,  TMUX_9,  TMUX_10, _______,
         _______, _______, _______, _______, _______, _______,
         _______, TM_NWIN, _______, _______, _______,
@@ -135,6 +135,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
+// const key_override_t backspace_key_override = ko_make_basic(MOD_MASK_CTRL, KC_H, KC_BSPC);
+
+// const key_override_t **key_overrides = (const key_override_t *[]){
+// 	&backspace_key_override,
+// 	NULL
+// };
+
 const uint16_t PROGMEM lgui[] = {KC_Z, KC_S, COMBO_END};
 const uint16_t PROGMEM lkm[] = {KC_J, KC_L, COMBO_END};
 const uint16_t PROGMEM pkm[] = {KC_J, KC_SCLN, COMBO_END};
@@ -167,9 +174,6 @@ bool oled_task_user(void) {
     switch (get_highest_layer(layer_state)) {
         case BASE:
             oled_write_ln_P(PSTR("BASE"), false);
-            break;
-        case MOUSE:
-            oled_write_ln_P(PSTR("MOUSE"), false);
             break;
         case SYMBOLS:
             oled_write_ln_P(PSTR("SYMBOLS"), false);
@@ -308,9 +312,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         if (record->event.pressed) {
             register_code(KC_LGUI);
             register_code(KC_SPC);
-        } else {
             unregister_code(KC_LGUI);
             unregister_code(KC_SPC);
+        } else {
+            // avoid long-pressing to accidentally trigger the third language
         }
         return false;
         break;
