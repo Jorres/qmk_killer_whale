@@ -6,6 +6,7 @@
 #define SCROLL_MODE 1
 
 #define TAPPING_TERM 130
+#define COMBO_TERM 40
 
 //////////////////////
 /*    ユーザー設定    */
