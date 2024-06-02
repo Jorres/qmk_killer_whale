@@ -114,7 +114,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         // 左手
         _______, _______, _______,  _______, _______, _______,
         _______, KC_ASTR, KC_EQUAL, KC_BSLS, KC_PIPE, _______,
-        _______, KC_CIRC, KC_GRV,   KC_DLR,  KC_AT,    KC_EXLM,
+        _______, KC_CIRC, KC_GRV,   KC_DLR,  KC_AT,   KC_EXLM,
                  _______, KC_MINS,  KC_LABK, KC_RABK, _______,
                           _______,
         _______, _______,
@@ -122,7 +122,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,                             _______,
 
         // 右手
-        _______, _______, _______, _______, _______, TO(BASE),
+        _______, _______, _______, _______, _______, _______,
         _______, KC_LCBR, KC_RCBR, KC_PLUS, _______, _______,
         KC_QUES, KC_LPRN, KC_RPRN, KC_HASH, KC_AMPR, KC_TILD,
         _______, KC_LBRC, KC_RBRC, KC_UNDS, KC_PERC,
@@ -133,10 +133,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [NUMBERS] = LAYOUT(
         // 左手
-        _______, _______, _______,  _______, _______, _______,
-        _______, _______, _______,  _______, _______, KC_LEFT,
-        _______, _______, _______,  _______, _______, KC_UP,
-                 _______, _______,  _______, _______, KC_DOWN,
+        _______, _______, LCTL(KC_LEFT), _______, LCTL(KC_RIGHT), _______,
+        _______, _______, RCS(KC_LEFT),  _______, RCS(KC_RIGHT),  KC_LEFT,
+        _______, _______, _______,       _______, _______,        KC_UP,
+                 _______, _______,       _______, _______,        KC_DOWN,
                           _______,
         _______, _______,
         _______, _______, _______,  _______,          _______,
@@ -144,10 +144,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
         // 右手
-        _______, _______, _______, _______, _______, TO(BASE),
-        KC_RIGHT, KC_7,   KC_8,    KC_9,   _______, _______,
-        KC_UP,    KC_4,   KC_5,    KC_6,   KC_0, _______,
-        KC_DOWN,  KC_1,   KC_2,    KC_3,   KC_0,
+        _______, _______, _______, _______, _______, _______,
+        KC_RIGHT, KC_7,   KC_8,    KC_9,    _______, _______,
+        KC_UP,    KC_4,   KC_5,    KC_6,    _______, _______,
+        KC_DOWN,  KC_1,   KC_2,    KC_3,    KC_0,
                                    _______,
         _______, _______,
         _______, _______, _______, _______,          _______,
@@ -650,7 +650,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (is_keyboard_master()) {
         return OLED_ROTATION_90;
     } else {
-        return OLED_ROTATION_270;
+        return rotation;
     }
 }
 
