@@ -164,7 +164,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 const uint16_t PROGMEM lgui[] = {KC_Z, KC_S, COMBO_END};
 const uint16_t PROGMEM lkm[] = {KC_J, KC_K, KC_L, COMBO_END};
-const uint16_t PROGMEM pkm[] = {KC_K, KC_L, KC_P, COMBO_END};
+const uint16_t PROGMEM pkm[] = {KC_M, KC_COMM, KC_DOT, COMBO_END};
 
 const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_P, COMBO_END};
 const uint16_t PROGMEM tmux_search[] = {KC_M, KC_P, COMBO_END};
