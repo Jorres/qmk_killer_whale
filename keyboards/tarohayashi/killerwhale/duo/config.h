@@ -8,6 +8,9 @@
 #define TAPPING_TERM 130
 #define COMBO_TERM 40
 
+#define OLED_TIMEOUT 120000
+#define OLED_BRIGHTNESS 200
+
 //////////////////////
 /*    ユーザー設定    */
 //////////////////////

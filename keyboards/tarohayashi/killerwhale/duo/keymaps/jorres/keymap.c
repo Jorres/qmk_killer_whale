@@ -629,7 +629,6 @@ static void render_luna(int LUNA_X, int LUNA_Y) {
 #    if OLED_TIMEOUT > 0
     /* the animation prevents the normal timeout from occuring */
     if (last_input_activity_elapsed() > OLED_TIMEOUT && last_led_activity_elapsed() > OLED_TIMEOUT) {
-
         oled_off();
         return;
     } else {
@@ -656,43 +655,41 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 }
 
 bool oled_task_user(void) {
-    // oled_clear();
+    if (is_keyboard_master()) {
+        current_wpm   = get_current_wpm();
+        led_usb_state = host_keyboard_led_state();
+        render_luna(0, 13);
+    } else {
+        oled_clear();
 
-    /* KEYBOARD PET VARIABLES START */
+        oled_write_P(PSTR("Layer: "), false);
+        switch (get_highest_layer(layer_state)) {
+            case BASE:
+                oled_write_ln_P(PSTR("BASE"), false);
+                break;
+            case SYMBOLS:
+                oled_write_ln_P(PSTR("SYMBOLS"), false);
+                break;
+            case NUMBERS:
+                oled_write_ln_P(PSTR("NUMBERS"), false);
+                break;
+            case NAVIGATION:
+                oled_write_ln_P(PSTR("NAVIGATION"), false);
+                break;
+            default:
+                oled_write_ln_P(PSTR("Undefined"), false);
+        }
 
-    current_wpm   = get_current_wpm();
-    led_usb_state = host_keyboard_led_state();
+        if (is_keyboard_master()) {
+            oled_write_ln_P(PSTR("MASTER"), false);
+        } else {
+            oled_write_ln_P(PSTR("SLAVE"), false);
+        }
 
-    /* KEYBOARD PET VARIABLES END */
+        oled_write_ln_P(PSTR("          ^.___.^   "), false);
 
-    render_luna(0, 13);
-    // oled_write_P(PSTR("Layer: "), false);
-
-    // switch (get_highest_layer(layer_state)) {
-    //     case BASE:
-    //         oled_write_ln_P(PSTR("BASE"), false);
-    //         break;
-    //     case SYMBOLS:
-    //         oled_write_ln_P(PSTR("SYMBOLS"), false);
-    //         break;
-    //     case NUMBERS:
-    //         oled_write_ln_P(PSTR("NUMBERS"), false);
-    //         break;
-    //     case NAVIGATION:
-    //         oled_write_ln_P(PSTR("NAVIGATION"), false);
-    //         break;
-    //     default:
-    //         oled_write_ln_P(PSTR("Undefined"), false);
-    // }
-
-    // if (is_keyboard_master()) {
-    //     oled_write_ln_P(PSTR("MASTER"), false);
-    // } else {
-    //     oled_write_ln_P(PSTR("SLAVE"), false);
-    // }
-
-    // oled_write_ln_P(PSTR("          ^.___.^   "), false);
-    // oled_write_ln_P(PSTR(""), false);
+        oled_write_ln_P(PSTR(""), false);
+    }
 
     return false;
 }
