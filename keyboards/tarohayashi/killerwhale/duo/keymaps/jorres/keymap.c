@@ -43,8 +43,7 @@ enum custom_keycodes {
     PRTSCR,
 
     I_ESC,
-
-    MOMENT_SCROLL,
+    K_SCROLL,
 
     KB_BRID,
     KB_BRIU,
@@ -77,9 +76,9 @@ bool showedJump = true;
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
-        KC_TAB,  KC_Q,      MOMENT_SCROLL,    MO(NUMBERS), _______, _______,
-        KC_LCTL, KC_A,      KC_W,             KC_E, KC_R, KC_T,
-        KC_LSFT, KC_Z,      KC_S,             KC_D, KC_F, KC_G,
+        KC_TAB,  KC_Q,      _______,    MO(NUMBERS), _______, _______,
+        KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
+        KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
         _______,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
         MO(NAVIGATION),
         LT(SYMBOLS, KC_SPC), KC_ENT,
@@ -88,11 +87,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
         // 右手
-        PRTSCR,  KC_LGUI, KC_SPC,  MOMENT_SCROLL, KC_0,    KC_F11,
-        KC_Y,    KC_U,    I_ESC,   KC_O,          KC_P,    LBRC_RCTL,
-        KC_H,    KC_J,    KC_K,    KC_L,          KC_SCLN, QUOT_RSFT,
-        KC_N,    KC_M,    KC_COMM, KC_DOT,        KC_SLSH,
-                                                  MO(NAVIGATION),
+        PRTSCR,  KC_LGUI, KC_SPC,  _______, KC_0,    KC_F11,
+        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P,    LBRC_RCTL,
+        KC_H,    KC_J,    K_SCROLL,KC_L,    KC_SCLN, QUOT_RSFT,
+        KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
+                                            MO(NAVIGATION),
         LT(SYMBOLS, KC_BSPC), LANG,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
@@ -205,6 +204,9 @@ void keyboard_post_init_user(void) {
 static uint16_t i_esc_timer = 0;
 static bool i_esc_pressed = false;
 
+static uint16_t k_scroll_timer = 0;
+static bool k_scroll_pressed = false;
+
 static uint16_t r_sft_timer = 0;
 static bool r_sft_alone = false;
 static bool registered_r_sft = false;
@@ -227,6 +229,11 @@ void matrix_scan_user(void) {
     if (i_esc_pressed && timer_elapsed(i_esc_timer) >= TAPPING_TERM) {
         i_esc_pressed = false;
         tap_code(KC_ESC);
+    }
+
+    if (k_scroll_pressed && timer_elapsed(k_scroll_timer) >= TAPPING_TERM) {
+        k_scroll_pressed = false;
+        set_scroll_mode();
     }
 }
 
@@ -301,14 +308,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             // rgblight_decrease_val();
         }
         return false;
-    case MOMENT_SCROLL:
-        uprintf("MOMENT_SCROLL\n");
-        if (record->event.pressed) {
-            set_scroll_mode();
-        } else {
-            unset_scroll_mode();
-        }
-        return false;
     case TMUX_COPY:
         uprintf("TMUX_COPY\n");
         if (record->event.pressed) {
@@ -374,6 +373,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_LCTL);
             unregister_code(KC_LSFT);
             unregister_code(KC_BSLS);
+        }
+        return false;
+    case K_SCROLL:
+        uprintf("K_SCROLL\n");
+        if (record->event.pressed) {
+            k_scroll_timer = timer_read();
+            k_scroll_pressed = true;
+        } else {
+            if (k_scroll_pressed && timer_elapsed(k_scroll_timer) < TAPPING_TERM) {
+                tap_code(KC_K);
+            } else {
+                unset_scroll_mode();
+            }
+            k_scroll_pressed = false;
         }
         return false;
     case I_ESC:
