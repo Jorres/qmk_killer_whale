@@ -19,9 +19,19 @@
 
 - for japanese, enable selecting a language accurately, like on moonlander. Combo invocation of LGUI does not seem to work
 
+- under the middle finger on numbers layer do some more often used shift + left\right arrow combinations. 
+  specifically used for messages and selecting text.
+
+- combo of three doesn't really feel good. I would like just a less frequent combo of two.
+  feels like `lk` can be a good candidate
+
+- shift and ctrl on the left hand in the same places as on the right
+
 ## Not flashed
 
 ## You are here
+
+- increase tapping term on right pinky finger
 
 - maybe rebind ctrl + h to backspace entirely? - unfortunately, ctrl + h has a meaning (in vim mainly) and will have 
   to stay ctrl-h. I don't have means in my keyboard to know what Vim mode am I currently in.
@@ -31,11 +41,24 @@
 - find a transistor and pray my button will work, so I can shift QAZ column one down (author was correct,
   I should not have raised the column for no reason lol. Chesterton's fence).
 
-- combo of three doesn't really feel good. I would like just a less frequent combo of two.
+- rgb brightness (does not work for some reason, wait for the last transistor)
 
-- under the middle finger on numbers layer do some more often used shift + left\right arrow combinations. 
-  specifically used for messages and selecting text.
+- sometimes pressing left dpad for too long causes random very long sequences of wwwww rrrrrr. Figure out why.
+    - after extended testing, pressing dpad feels uncomfortable for some reason. Remap scroll-hold to something
+      else entirely
 
 ## Think a bit harder
 
-- one more iteration of unifying symbols on two languages
+- think of a special usage pattern to do relative jumps which would not require arrow keys
+  caveat: 155 is technically indistinguishable from 15k, right? So the differentiation will have to come 
+  from the change in my behaviour, i will have to supply this bit of info. perhaps an additional way of 
+  entering the numbers layer (== effectively a separate jump layer)?
+
+## Just thoughts
+
+- you have two mod-tap keys: left ctrl and shift. If you set tapping term to smth like 100ms,
+  you should theoretically not notice in any usage where ctrl or shift are held, but this technically
+  frees two buttons for quick tapping
+
+- I should acknowledge that numbers \ symbols absolutely break my everything and are NOT NICE to use.
+    - when typing numbers, I often need - or _.

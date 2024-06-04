@@ -1,6 +1,10 @@
 #include QMK_KEYBOARD_H
+
+#include "pico/bootrom.h"
+
 #include "lib/add_keycodes.h"
 #include "lib/common_killerwhale.h"
+
 
 enum layer_number {
     BASE = 0,
@@ -43,6 +47,11 @@ enum custom_keycodes {
     I_ESC,
 
     DPAD_LEFT,
+
+    KB_BRID,
+    KB_BRIU,
+
+    BOOTLOADER,
 };
 
 /* Luna settings */
@@ -80,9 +89,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
         // 右手
-        PRTSCR,  KC_LGUI, KC_SPC,  KC_0,    KC_F11, KC_RSFT,
-        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P, KC_LBRC,
-        KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+        PRTSCR,  KC_LGUI, KC_SPC,  KC_0,    KC_F11,  _______,
+        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P,    MT(MOD_LCTL, KC_LBRC),
+        KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, MT(MOD_LSFT, KC_QUOT),
         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
                                             MO(NAVIGATION),
         LT(SYMBOLS, KC_BSPC), LANG,
@@ -101,7 +110,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,                            _______,
 
         // 右手
-        _______, _______, _______, _______, _______, _______,
+        KB_BRID, KB_BRIU, _______, _______, _______, _______,
         TMUX_6,  TMUX_7,  TMUX_8,  TMUX_9,  TMUX_10, _______,
         _______, _______, _______, _______, _______, _______,
         _______, TM_NWIN, _______, _______, _______,
@@ -110,9 +119,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______,          _______,
         _______, _______,                            _______
     ),
+
     [SYMBOLS] = LAYOUT(
         // 左手
-        _______, _______, _______,  _______, _______, _______,
+        UC(64), _______, _______,  _______, _______, _______,
         _______, KC_ASTR, KC_EQUAL, KC_BSLS, KC_PIPE, _______,
         _______, KC_CIRC, KC_GRV,   KC_DLR,  KC_AT,   KC_EXLM,
                  _______, KC_MINS,  KC_LABK, KC_RABK, _______,
@@ -121,11 +131,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______,  _______,          _______,
         _______, _______,                             _______,
 
+
         // 右手
         _______, _______, _______, _______, _______, _______,
         _______, KC_LCBR, KC_RCBR, KC_PLUS, _______, _______,
-        KC_QUES, KC_LPRN, KC_RPRN, KC_HASH, KC_AMPR, KC_TILD,
-        _______, KC_LBRC, KC_RBRC, KC_UNDS, KC_PERC,
+        KC_TILD, KC_LPRN, KC_RPRN, KC_HASH, KC_AMPR, _______,
+        KC_PERC, KC_LBRC, KC_RBRC, KC_UNDS, _______,
                                    _______,
         _______, _______,
         _______, _______, _______, _______,          _______,
@@ -163,12 +174,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // };
 
 const uint16_t PROGMEM lgui[] = {KC_Z, KC_S, COMBO_END};
-const uint16_t PROGMEM lkm[] = {KC_J, KC_K, KC_L, COMBO_END};
+const uint16_t PROGMEM lkm[] = {KC_K, KC_L, COMBO_END};
 const uint16_t PROGMEM pkm[] = {KC_M, KC_COMM, KC_DOT, COMBO_END};
 
 const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_P, COMBO_END};
 const uint16_t PROGMEM tmux_search[] = {KC_M, KC_P, COMBO_END};
 const uint16_t PROGMEM tmux_copy[] = {KC_U, KC_P, COMBO_END};
+
+const uint16_t PROGMEM bootloader[] = {KC_Q, KC_W, KC_A, KC_S,  COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(lkm, KC_MS_BTN1),
@@ -178,6 +191,8 @@ combo_t key_combos[] = {
     COMBO(tmux_highlight, TMUX_HIGHLIGHT),
     COMBO(tmux_search, TMUX_SEARCH),
     COMBO(tmux_copy, TMUX_COPY),
+
+    COMBO(bootloader, BOOTLOADER),
 };
 
 void keyboard_post_init_user(void) {
@@ -205,13 +220,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+    case BOOTLOADER:
+        uprintf("BOOTLOADER\n");
+        if (record->event.pressed) {
+            oled_write_ln_P(PSTR("BOOTLOADER"), false);
+            reset_usb_boot(0, 0);
+        }
+        return false;
+    case KB_BRIU:
+        uprintf("KB_BRIU\n");
+        if (record->event.pressed) {
+            // rgblight_increase_val();
+        }
+        return false;
+    case KB_BRID:
+        uprintf("KB_BRID\n");
+        if (record->event.pressed) {
+            // rgblight_decrease_val();
+        }
+        return false;
     case DPAD_LEFT:
         uprintf("DPAD_LEFT\n");
         if (record->event.pressed) {
-            // register_code(KC_LEFT);
             set_scroll_mode();
         } else {
-            // unregister_code(KC_LEFT);
             unset_scroll_mode();
         }
         return false;
@@ -692,4 +724,15 @@ bool oled_task_user(void) {
     }
 
     return false;
+}
+
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case MT(MOD_LCTL, KC_LBRC):
+            return TAPPING_TERM + 100;
+        case MT(MOD_LSFT, KC_QUOT):
+            return TAPPING_TERM + 100;
+        default:
+            return TAPPING_TERM;
+    }
 }
