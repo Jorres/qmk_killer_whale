@@ -32,6 +32,10 @@
 ## You are here
 
 - increase tapping term on right pinky finger
+    - tapping term is not exactly what I needed. even if tapping term is low, I still press the next
+    key BEFORE releasing the key under pinkey finger. This automatically counts as held. I need to just register
+    custom keycode and release it exacly the same way as I_ESC, the problem is exactly the same. Just refactor your 
+    timers a bit so they are extensible)
 
 - maybe rebind ctrl + h to backspace entirely? - unfortunately, ctrl + h has a meaning (in vim mainly) and will have 
   to stay ctrl-h. I don't have means in my keyboard to know what Vim mode am I currently in.

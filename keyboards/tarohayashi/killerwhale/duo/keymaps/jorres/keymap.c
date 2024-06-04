@@ -1,7 +1,5 @@
 #include QMK_KEYBOARD_H
 
-#include "pico/bootrom.h"
-
 #include "lib/add_keycodes.h"
 #include "lib/common_killerwhale.h"
 
@@ -46,12 +44,13 @@ enum custom_keycodes {
 
     I_ESC,
 
-    DPAD_LEFT,
+    MOMENT_SCROLL,
 
     KB_BRID,
     KB_BRIU,
 
-    BOOTLOADER,
+    LBRC_RCTL,
+    QUOT_RSFT,
 };
 
 /* Luna settings */
@@ -78,22 +77,22 @@ bool showedJump = true;
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
-        KC_TAB,  KC_Q,      _______,          MO(NUMBERS), _______, _______,
+        KC_TAB,  KC_Q,      MOMENT_SCROLL,    MO(NUMBERS), _______, _______,
         KC_LCTL, KC_A,      KC_W,             KC_E, KC_R, KC_T,
         KC_LSFT, KC_Z,      KC_S,             KC_D, KC_F, KC_G,
-                 _______,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
-                            MO(NAVIGATION),
+        _______,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
+        MO(NAVIGATION),
         LT(SYMBOLS, KC_SPC), KC_ENT,
-        _______, _______, DPAD_LEFT, R_CHMOD,  _______, // <--- first 3 blanks are candidates for filling
+        _______, _______, _______, R_CHMOD,  _______, // <--- first 3 blanks are candidates for filling
         _______, _______,                    _______,
 
 
         // 右手
-        PRTSCR,  KC_LGUI, KC_SPC,  KC_0,    KC_F11,  _______,
-        KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P,    MT(MOD_LCTL, KC_LBRC),
-        KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, MT(MOD_LSFT, KC_QUOT),
-        KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
-                                            MO(NAVIGATION),
+        PRTSCR,  KC_LGUI, KC_SPC,  MOMENT_SCROLL, KC_0,    KC_F11,
+        KC_Y,    KC_U,    I_ESC,   KC_O,          KC_P,    LBRC_RCTL,
+        KC_H,    KC_J,    KC_K,    KC_L,          KC_SCLN, QUOT_RSFT,
+        KC_N,    KC_M,    KC_COMM, KC_DOT,        KC_SLSH,
+                                                  MO(NAVIGATION),
         LT(SYMBOLS, KC_BSPC), LANG,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
@@ -192,7 +191,7 @@ combo_t key_combos[] = {
     COMBO(tmux_search, TMUX_SEARCH),
     COMBO(tmux_copy, TMUX_COPY),
 
-    COMBO(bootloader, BOOTLOADER),
+    COMBO(bootloader, QK_BOOTLOADER),
 };
 
 void keyboard_post_init_user(void) {
@@ -205,6 +204,24 @@ void keyboard_post_init_user(void) {
 
 static uint16_t i_esc_timer = 0;
 static bool i_esc_pressed = false;
+
+static uint16_t r_sft_timer = 0;
+static bool r_sft_alone = false;
+static bool registered_r_sft = false;
+
+static uint16_t r_ctl_timer = 0;
+static bool r_ctl_alone = false;
+static bool registered_r_ctl = false;
+
+// behavior of my custom right modifiers:
+// if tapped alone within tapping term, should just send their key.
+// if tapped, held and tapped other key while holding (happens when fast typing),
+//   MUST also register the regular key and do earlier release
+// if tapped, held for TAPPING_TERM,
+//
+// we have to write code in multiple places: variable declarations,
+// code in process_record_user that should trigger when the SUBSEQUENT key is pressed,
+// and code in process_record_user's switch to trigger when the actual key is pressed.
 
 void matrix_scan_user(void) {
     if (i_esc_pressed && timer_elapsed(i_esc_timer) >= TAPPING_TERM) {
@@ -219,12 +236,57 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         tap_code(KC_I);
     }
 
+    if (keycode != LBRC_RCTL && r_ctl_alone) {
+        r_ctl_alone = false;
+        if (timer_elapsed(r_ctl_timer) < TAPPING_TERM) {
+            tap_code(KC_LBRC);
+        } else if (!registered_r_ctl) {
+            registered_r_ctl = true;
+            register_code(KC_RCTL);
+        }
+    }
+
+    if (keycode != QUOT_RSFT && r_sft_alone) {
+        r_sft_alone = false;
+        if (timer_elapsed(r_sft_timer) < TAPPING_TERM) {
+            tap_code(KC_QUOT);
+        } else if (!registered_r_sft) {
+            registered_r_sft = true;
+            register_code(KC_RSFT);
+        }
+    }
+
     switch (keycode) {
-    case BOOTLOADER:
-        uprintf("BOOTLOADER\n");
+    case LBRC_RCTL:
+        uprintf("LBRC_RCTL\n");
         if (record->event.pressed) {
-            oled_write_ln_P(PSTR("BOOTLOADER"), false);
-            reset_usb_boot(0, 0);
+            r_ctl_timer = timer_read();
+            r_ctl_alone = true;
+        } else {
+            if (registered_r_ctl) {
+                unregister_code(KC_RCTL);
+            } else if (r_ctl_alone) {
+                tap_code(KC_LBRC);
+            }
+            registered_r_ctl = false;
+            r_ctl_timer = 0;
+            r_ctl_alone = false;
+        }
+        return false;
+    case QUOT_RSFT:
+        uprintf("QUOT_RSFT\n");
+        if (record->event.pressed) {
+            r_sft_timer = timer_read();
+            r_sft_alone = true;
+        } else {
+            if (registered_r_sft) {
+                unregister_code(KC_RSFT);
+            } else if (r_sft_alone) {
+                tap_code(KC_QUOT);
+            }
+            registered_r_sft = false;
+            r_sft_timer = 0;
+            r_sft_alone = false;
         }
         return false;
     case KB_BRIU:
@@ -239,8 +301,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             // rgblight_decrease_val();
         }
         return false;
-    case DPAD_LEFT:
-        uprintf("DPAD_LEFT\n");
+    case MOMENT_SCROLL:
+        uprintf("MOMENT_SCROLL\n");
         if (record->event.pressed) {
             set_scroll_mode();
         } else {
@@ -729,9 +791,9 @@ bool oled_task_user(void) {
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case MT(MOD_LCTL, KC_LBRC):
-            return TAPPING_TERM + 100;
+            return TAPPING_TERM + 500;
         case MT(MOD_LSFT, KC_QUOT):
-            return TAPPING_TERM + 100;
+            return TAPPING_TERM + 500;
         default:
             return TAPPING_TERM;
     }
