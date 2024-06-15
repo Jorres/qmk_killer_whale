@@ -6,7 +6,8 @@
 #define SCROLL_MODE 1
 
 #define TAPPING_TERM 130
-#define COMBO_TERM 40
+#define QUOT_RSFT_TAPPING_TERM 50
+#define COMBO_TERM 50
 
 #define OLED_TIMEOUT 300000
 #define OLED_BRIGHTNESS 200
@@ -51,7 +52,7 @@
 // ジョイスティク用定数
 #define KEY_OFFSET 7                // キー入力閾値
 #define TIMEOUT_KEY 80              // キー入力間隔
-#define SCROLL_DIVISOR 100.0        // スクロール用数値調整
+#define SCROLL_DIVISOR 50.0        // スクロール用数値調整
 
 // OLED設定
 #define OLED_DEFAULT true           // true: レイヤー表示, false: 数値表示

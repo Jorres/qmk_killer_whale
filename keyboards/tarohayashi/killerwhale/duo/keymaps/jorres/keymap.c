@@ -33,17 +33,18 @@ enum custom_keycodes {
     BRO_LEF,
     BRO_RIG,
     BRO_ADL,
-    BRO_NEW,
 
     NAV_TRM,
     NAV_BRO,
     NAV_TEL,
-    NAV_XXX,
+
+    NAV_XX1,
+    NAV_XX2,
+    NAV_XX3,
 
     PRTSCR,
 
     I_ESC,
-    K_SCROLL,
 
     KB_BRID,
     KB_BRIU,
@@ -87,12 +88,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
         // 右手
-        PRTSCR,  KC_LGUI, KC_SPC,  _______, KC_0,    KC_F11,
+        PRTSCR,  _______, _______,  KC_0,    KC_F11,  KC_DELETE,
         KC_Y,    KC_U,    I_ESC,   KC_O,    KC_P,    LBRC_RCTL,
-        KC_H,    KC_J,    K_SCROLL,KC_L,    KC_SCLN, QUOT_RSFT,
+        KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, QUOT_RSFT,
         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
                                             MO(NAVIGATION),
-        LT(SYMBOLS, KC_BSPC), LANG,
+        MO(SYMBOLS), LANG,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
     ),
@@ -100,24 +101,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         // 左手
         _______, _______, KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
         _______, TMUX_1,  TMUX_2,  TMUX_3,  TMUX_4,  TMUX_5,
-        _______, _______, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XXX,
+        _______, _______, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XX1,
                  _______, _______, _______, _______, TM_SESS,
                           KC_TRNS,
-        BRO_LEF, BRO_NEW,
+        BRO_LEF, _______,
         _______, _______, _______, _______,          _______,
         _______, _______,                            _______,
 
         // 右手
         KB_BRID, KB_BRIU, _______, _______, _______, _______,
         TMUX_6,  TMUX_7,  TMUX_8,  TMUX_9,  TMUX_10, _______,
-        _______, _______, _______, _______, _______, _______,
+        NAV_XX2, NAV_XX3, KC_WBAK, KC_WREF, KC_WFWD, _______,
         _______, TM_NWIN, _______, _______, _______,
                                    KC_TRNS,
         BRO_ADL, BRO_RIG,
         _______, _______, _______, _______,          _______,
         _______, _______,                            _______
     ),
-
     [SYMBOLS] = LAYOUT(
         // 左手
         UC(64), _______, _______,  _______, _______, _______,
@@ -164,20 +164,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-// const key_override_t backspace_key_override = ko_make_basic(MOD_MASK_CTRL, KC_H, KC_BSPC);
-
-// const key_override_t **key_overrides = (const key_override_t *[]){
-// 	&backspace_key_override,
-// 	NULL
-// };
-
 const uint16_t PROGMEM lgui[] = {KC_Z, KC_S, COMBO_END};
-const uint16_t PROGMEM lkm[] = {KC_K, KC_L, COMBO_END};
+const uint16_t PROGMEM lkm[] = {KC_J, KC_K, KC_L, COMBO_END};
 const uint16_t PROGMEM pkm[] = {KC_M, KC_COMM, KC_DOT, COMBO_END};
 
-const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_P, COMBO_END};
-const uint16_t PROGMEM tmux_search[] = {KC_M, KC_P, COMBO_END};
-const uint16_t PROGMEM tmux_copy[] = {KC_U, KC_P, COMBO_END};
+const uint16_t PROGMEM tmux_copy[] = {KC_U, KC_DELETE, COMBO_END};
+const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_DELETE, COMBO_END};
+const uint16_t PROGMEM tmux_search[] = {KC_M, KC_DELETE, COMBO_END};
 
 const uint16_t PROGMEM bootloader[] = {KC_Q, KC_W, KC_A, KC_S,  COMBO_END};
 
@@ -186,9 +179,9 @@ combo_t key_combos[] = {
     COMBO(pkm, KC_MS_BTN2),
     COMBO(lgui, KC_LGUI),
 
+    COMBO(tmux_copy, TMUX_COPY),
     COMBO(tmux_highlight, TMUX_HIGHLIGHT),
     COMBO(tmux_search, TMUX_SEARCH),
-    COMBO(tmux_copy, TMUX_COPY),
 
     COMBO(bootloader, QK_BOOTLOADER),
 };
@@ -237,6 +230,13 @@ void matrix_scan_user(void) {
     }
 }
 
+const key_override_t ctrl_h_to_backspace = ko_make_basic(MOD_MASK_CTRL, KC_H, KC_BSPC);
+
+const key_override_t **key_overrides = (const key_override_t *[]){
+	&ctrl_h_to_backspace,
+	NULL // Null terminate the array of overrides!
+};
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (keycode != I_ESC && i_esc_pressed) {
         i_esc_pressed = false;
@@ -255,7 +255,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (keycode != QUOT_RSFT && r_sft_alone) {
         r_sft_alone = false;
-        if (timer_elapsed(r_sft_timer) < TAPPING_TERM) {
+        if (timer_elapsed(r_sft_timer) < QUOT_RSFT_TAPPING_TERM) {
             tap_code(KC_QUOT);
         } else if (!registered_r_sft) {
             registered_r_sft = true;
@@ -272,7 +272,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         } else {
             if (registered_r_ctl) {
                 unregister_code(KC_RCTL);
-            } else if (r_ctl_alone) {
+            } else if (r_ctl_alone && timer_elapsed(r_ctl_timer) < TAPPING_TERM) {
                 tap_code(KC_LBRC);
             }
             registered_r_ctl = false;
@@ -283,14 +283,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case QUOT_RSFT:
         uprintf("QUOT_RSFT\n");
         if (record->event.pressed) {
+            set_scroll_mode(); // yes, this key also doubles as trackball scroll enabler
             r_sft_timer = timer_read();
             r_sft_alone = true;
         } else {
             if (registered_r_sft) {
                 unregister_code(KC_RSFT);
-            } else if (r_sft_alone) {
+            } else if (r_sft_alone && timer_elapsed(r_sft_timer) < TAPPING_TERM) {
                 tap_code(KC_QUOT);
             }
+            unset_scroll_mode();
             registered_r_sft = false;
             r_sft_timer = 0;
             r_sft_alone = false;
@@ -330,11 +332,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_LCTL);
             unregister_code(KC_A);
             tap_code(KC_LBRC);
-            register_code(KC_LCTL);
+            register_code(KC_LSFT);
             register_code(KC_SLSH);
         } else {
-            register_code(KC_LCTL);
-            register_code(KC_SLSH);
+            unregister_code(KC_LSFT);
+            unregister_code(KC_SLSH);
         }
         return false;
     case TMUX_HIGHLIGHT:
@@ -373,20 +375,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_LCTL);
             unregister_code(KC_LSFT);
             unregister_code(KC_BSLS);
-        }
-        return false;
-    case K_SCROLL:
-        uprintf("K_SCROLL\n");
-        if (record->event.pressed) {
-            k_scroll_timer = timer_read();
-            k_scroll_pressed = true;
-        } else {
-            if (k_scroll_pressed && timer_elapsed(k_scroll_timer) < TAPPING_TERM) {
-                tap_code(KC_K);
-            } else {
-                unset_scroll_mode();
-            }
-            k_scroll_pressed = false;
         }
         return false;
     case I_ESC:
@@ -549,14 +537,36 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         return false;
         break;
-    case NAV_XXX:
-        uprintf("NAV_XXX\n");
+    case NAV_XX1:
+        uprintf("NAV_XX1\n");
         if (record->event.pressed) {
             register_code(KC_LGUI);
             register_code(KC_4);
         } else {
             unregister_code(KC_LGUI);
             unregister_code(KC_4);
+        }
+        return false;
+        break;
+    case NAV_XX2:
+        uprintf("NAV_XX2\n");
+        if (record->event.pressed) {
+            register_code(KC_LGUI);
+            register_code(KC_5);
+        } else {
+            unregister_code(KC_LGUI);
+            unregister_code(KC_5);
+        }
+        return false;
+        break;
+    case NAV_XX3:
+        uprintf("NAV_XX3\n");
+        if (record->event.pressed) {
+            register_code(KC_LGUI);
+            register_code(KC_6);
+        } else {
+            unregister_code(KC_LGUI);
+            unregister_code(KC_6);
         }
         return false;
         break;
@@ -601,16 +611,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         } else {
             unregister_code(KC_LALT);
             unregister_code(KC_D);
-        }
-        return false;
-        break;
-    case BRO_NEW:
-        if (record->event.pressed) {
-            register_code(KC_LCTL);
-            register_code(KC_T);
-        } else {
-            unregister_code(KC_LCTL);
-            unregister_code(KC_T);
         }
         return false;
         break;
@@ -803,10 +803,6 @@ bool oled_task_user(void) {
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case MT(MOD_LCTL, KC_LBRC):
-            return TAPPING_TERM + 500;
-        case MT(MOD_LSFT, KC_QUOT):
-            return TAPPING_TERM + 500;
         default:
             return TAPPING_TERM;
     }

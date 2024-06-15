@@ -27,9 +27,7 @@
 
 - shift and ctrl on the left hand in the same places as on the right
 
-## Not flashed
-
-## You are here
+- reflashing without unplugging a single cable
 
 - increase tapping term on right pinky finger
     - tapping term is not exactly what I needed. even if tapping term is low, I still press the next
@@ -37,19 +35,33 @@
     custom keycode and release it exacly the same way as I_ESC, the problem is exactly the same. Just refactor your 
     timers a bit so they are extensible)
 
+- move momentary scroll to the right hand
+
+- move yushakobo linear switches to pinky fingers
+
 - maybe rebind ctrl + h to backspace entirely? - unfortunately, ctrl + h has a meaning (in vim mainly) and will have 
   to stay ctrl-h. I don't have means in my keyboard to know what Vim mode am I currently in.
   just rebind in lua if the problem is with neovim only?
 - https://docs.qmk.fm/feature_key_overrides#ko-make-basic-modifiers-key-replacement
+
+- sometimes pressing left dpad for too long causes random very long sequences of wwwww rrrrrr. Figure out why.
+    - after extended testing, pressing dpad feels uncomfortable for some reason. Remap scroll-hold to something
+      else entirely. Remapped!
+
+
+## Not flashed
+
+## You are here
+
+- move tmux combos to somewhere else. they disrupt typing 
 
 - find a transistor and pray my button will work, so I can shift QAZ column one down (author was correct,
   I should not have raised the column for no reason lol. Chesterton's fence).
 
 - rgb brightness (does not work for some reason, wait for the last transistor)
 
-- sometimes pressing left dpad for too long causes random very long sequences of wwwww rrrrrr. Figure out why.
-    - after extended testing, pressing dpad feels uncomfortable for some reason. Remap scroll-hold to something
-      else entirely
+- have a look at https://docs.qmk.fm/tap_hold#retro-tapping, maybe your stupid code for right ctrl and shift will
+  get simplified
 
 ## Think a bit harder
 
