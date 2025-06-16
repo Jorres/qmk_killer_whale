@@ -15,6 +15,7 @@ enum layer_number {
     NUMBERS,
     QUD,
     QUD_2,
+    BLADE,
 };
 
 enum custom_keycodes {
@@ -87,13 +88,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
          // KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4,
-        KC_TAB,  KC_Q,      _______,    MO(NUMBERS), _______, KC_J,
+        KC_TAB,  KC_Q,      KC_1,    MO(NUMBERS), TO(BLADE), KC_J,
         KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
         KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
         KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
         MO(NAVIGATION),
         LT(SYMBOLS, KC_SPC), KC_ENT,
-        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______, // first four are d-pad on the left  half
+        _______, _______, KC_LALT, KC_ESC,  _______, // first four are d-pad on the left  half
+        // KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
         _______, _______,                    _______,
 
 
@@ -215,6 +217,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_F,    KC_G,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                    _______
+    ),
+    [BLADE] = LAYOUT(
+        // 左手
+         KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, TO(BASE),
+        KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
+        KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
+        KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
+        MO(NAVIGATION),
+        KC_SPC, KC_ENT,
+        _______, _______, KC_LALT, KC_ESC,  _______, // first four are d-pad on the left  half
+        // KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
+        _______, _______,                    _______,
+
+
+        // 右手
+        PRTSCR,  HARPOON_1, HARPOON_2,  KC_0,    KC_F11,  KC_DELETE,
+        KC_Y,    KC_U,      I_ESC,      KC_O,    KC_P,    LBRC_RCTL,
+        KC_H,    KC_J,      KC_K,       KC_L,    KC_SCLN, QUOT_RSFT,
+        KC_N,    KC_M,      KC_COMM,    KC_DOT,  KC_SLSH,
+                                                 MO(NAVIGATION),
+        LT(SYMBOLS, KC_BSPC), LANG,
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+        _______, _______,                     _______
     ),
 };
 
@@ -863,6 +888,9 @@ void write_layer_to_oled(void) {
             break;
         case QUD_2:
             oled_write_ln_P(PSTR("QUD_2"), false);
+            break;
+        case BLADE:
+            oled_write_ln_P(PSTR("BLADE"), false);
             break;
         default:
             oled_write_ln_P(PSTR("Undefined"), false);
