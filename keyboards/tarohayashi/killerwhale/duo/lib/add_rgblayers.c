@@ -59,6 +59,28 @@ const rgblight_segment_t PROGMEM nier_layer[] = RGBLIGHT_LAYER_SEGMENTS(
         {61, 2,  HSV_BLACK}
 );
 
+const rgblight_segment_t PROGMEM nier_2_layer[] = RGBLIGHT_LAYER_SEGMENTS(
+        {0, 3,   HSV_AZURE},
+        {3, 24,  HSV_BLACK},
+        {27, 1,  HSV_AZURE},
+        {28, 2,  HSV_BLACK},
+        {33, 3,  HSV_AZURE},
+        {36, 24, HSV_BLACK},
+        {60, 1,  HSV_AZURE},
+        {61, 2,  HSV_BLACK}
+);
+
+const rgblight_segment_t PROGMEM nier_3_layer[] = RGBLIGHT_LAYER_SEGMENTS(
+        {0, 3,   HSV_PURPLE},
+        {3, 24,  HSV_BLACK},
+        {27, 1,  HSV_PURPLE},
+        {28, 2,  HSV_BLACK},
+        {33, 3,  HSV_PURPLE},
+        {36, 24, HSV_BLACK},
+        {60, 1,  HSV_PURPLE},
+        {61, 2,  HSV_BLACK}
+);
+
 // レイヤーごとの発光方法の指定
 const rgblight_segment_t* const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
     base_layer,
@@ -67,7 +89,9 @@ const rgblight_segment_t* const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
     numbers_layer,
     qud_layer,
     qud_2_layer,
-    nier_layer
+    nier_layer,
+    nier_2_layer,
+    nier_3_layer
 );
 
 // 初期化
@@ -78,7 +102,7 @@ void keyboard_post_init_kb(void) {
 
 // 発光条件の設定
 layer_state_t layer_state_set_user(layer_state_t state) {
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 9; i++) {
         rgblight_set_layer_state(i, kw_config.rgb_layer && layer_state_cmp(state, i));
     }
     return state;

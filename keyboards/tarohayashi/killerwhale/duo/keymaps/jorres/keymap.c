@@ -15,7 +15,9 @@ enum layer_number {
     NUMBERS,
     QUD,
     QUD_2,
-    BLADE,
+    SC_MAIN,
+    SC_SEC,
+    SC_THI,
 };
 
 enum custom_keycodes {
@@ -61,6 +63,8 @@ enum custom_keycodes {
 
     HARPOON_1,
     HARPOON_2,
+
+    CTLSHFT,
 };
 
 /* Luna settings */
@@ -88,7 +92,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
          // KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4,
-        KC_TAB,  KC_Q,      KC_1,    MO(NUMBERS), TO(BLADE), KC_J,
+        KC_TAB,  KC_Q,      KC_1,    MO(NUMBERS), TO(SC_MAIN), KC_J,
         KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
         KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
         KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
@@ -218,14 +222,60 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                    _______
     ),
-    [BLADE] = LAYOUT(
+    [SC_MAIN] = LAYOUT(
         // 左手
-        KC_TAB,  KC_Q,      KC_1,       KC_2, KC_3, KC_4,
-        KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_5,
-        KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_6,
+        CTLSHFT,  KC_Q,      KC_1,       KC_2, KC_3, KC_4,
+        LM(SC_SEC, MOD_LCTL), KC_A,      KC_W,       KC_E, KC_R, KC_T,
+        KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
         KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
-        KC_T,
-        KC_SPC, KC_ENT,
+        KC_ESC,
+        LM(SC_THI, MOD_LSFT), KC_ENT,
+        // _______, _______, KC_LALT, KC_ESC,  _______, // first four are d-pad on the left  half
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
+        _______, _______,                    _______,
+
+
+        // 右手
+        TO(BASE),  HARPOON_1, HARPOON_2,  KC_0,    KC_F11,  KC_DELETE,
+        KC_Y,    KC_U,      I_ESC,      KC_O,    KC_P,    LBRC_RCTL,
+        KC_H,    KC_J,      KC_K,       KC_L,    KC_SCLN, QUOT_RSFT,
+        KC_N,    KC_M,      KC_COMM,    KC_DOT,  KC_SLSH,
+                                                 MO(NAVIGATION),
+        LT(SYMBOLS, KC_BSPC), LANG,
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+        _______, _______,                     _______
+    ),
+    [SC_SEC] = LAYOUT(
+        // 左手
+        CTLSHFT,  KC_Q,      KC_1,       KC_2, KC_3, KC_4,
+        _______, KC_A,      KC_5,       KC_6, KC_7, KC_8,
+        _______, KC_Z,      KC_F1,       KC_F2, KC_F3, KC_F4,
+        KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
+        KC_ESC,
+        KC_ESC, KC_ENT,
+        // _______, _______, KC_LALT, KC_ESC,  _______, // first four are d-pad on the left  half
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
+        _______, _______,                    _______,
+
+
+        // 右手
+        TO(BASE),  HARPOON_1, HARPOON_2,  KC_0,    KC_F11,  KC_DELETE,
+        KC_Y,    KC_U,      I_ESC,      KC_O,    KC_P,    LBRC_RCTL,
+        KC_H,    KC_J,      KC_K,       KC_L,    KC_SCLN, QUOT_RSFT,
+        KC_N,    KC_M,      KC_COMM,    KC_DOT,  KC_SLSH,
+                                                 MO(NAVIGATION),
+        LT(SYMBOLS, KC_BSPC), LANG,
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+        _______, _______,                     _______
+    ),
+    [SC_THI] = LAYOUT(
+        // 左手
+        CTLSHFT,  KC_Q,      KC_1,       KC_2, KC_3, KC_4,
+        _______, KC_A,      KC_5,       KC_6, KC_7, KC_8,
+        _______, KC_Z,      KC_F1,       KC_F2, KC_F3, KC_F4,
+        KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
+        KC_ESC,
+        KC_ESC, KC_ENT,
         // _______, _______, KC_LALT, KC_ESC,  _______, // first four are d-pad on the left  half
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
         _______, _______,                    _______,
@@ -341,6 +391,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+    case CTLSHFT:
+        if (record->event.pressed) {
+            register_mods(MOD_BIT(KC_LCTL) | MOD_BIT(KC_LSFT));
+        } else {
+            unregister_mods(MOD_BIT(KC_LCTL) | MOD_BIT(KC_LSFT));
+        }
+        return false;
     case LBRC_RCTL:
         uprintf("LBRC_RCTL\n");
         if (record->event.pressed) {
@@ -889,8 +946,14 @@ void write_layer_to_oled(void) {
         case QUD_2:
             oled_write_ln_P(PSTR("QUD_2"), false);
             break;
-        case BLADE:
-            oled_write_ln_P(PSTR("BLADE"), false);
+        case SC_MAIN:
+            oled_write_ln_P(PSTR("SC_MAIN"), false);
+            break;
+        case SC_SEC:
+            oled_write_ln_P(PSTR("SC_SEC"), false);
+            break;
+        case SC_THI:
+            oled_write_ln_P(PSTR("SC_THI"), false);
             break;
         default:
             oled_write_ln_P(PSTR("Undefined"), false);
