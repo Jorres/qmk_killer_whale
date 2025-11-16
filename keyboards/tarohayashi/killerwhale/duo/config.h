@@ -58,10 +58,6 @@
 #define OLED_DEFAULT true           // true: レイヤー表示, false: 数値表示
 #define INTERRUPT_TIME 600          // OLED割り込み時間
 
-// RGBレイヤーデフォルト
-#define RGB_LAYER_DEFAULT true
-#define RGBLIGHT_DEFAULT_ON false
-
 // 一時的モード変更タップ判定ms
 #define TERM_TEMP 100
 
@@ -93,9 +89,19 @@
 #define SELECT_SOFT_SERIAL_SPEED 1
 #define POINTING_DEVICE_TASK_THROTTLE_MS 4
 
+// RGBレイヤーデフォルト
+// #define RGB_LAYER_DEFAULT true
+#define RGBLIGHT_DEFAULT_ON true
+
 // RGBLIGHT LAYERS
-#define RGBLIGHT_LAYERS
-#define RGBLIGHT_MAX_LAYERS 7
+// #define RGBLIGHT_LAYERS
+// #define RGBLIGHT_MAX_LAYERS 10
+#define RGBLIGHT_SPLIT  // Enable split RGB sync
+#define RGBLIGHT_SLEEP  // Enable split RGB sync
+#define RGBLIGHT_DEFAULT_VAL 0  // Enable split RGB sync
+#define RGBLED_SPLIT { 33, 33 }
+#define RGBLIGHT_LED_COUNT 66
+#define RGBLIGHT_LAYERS_RETAIN_VAL
 
 // UNICODE
 #define UNICODE_KEY_LNX LCTL(LSFT(KC_U))

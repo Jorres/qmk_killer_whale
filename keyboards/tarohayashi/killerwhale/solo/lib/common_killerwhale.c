@@ -47,7 +47,7 @@ void eeconfig_init_kb(void) {
     }else {
         kw_config.angle = ANGLE_DEFAULT_LEFT;
     }
-    kw_config.rgb_layer = RGB_LAYER_DEFAULT;
+    // kw_config.rgb_layer = RGB_LAYER_DEFAULT;
     kw_config.pd_mode = MODE_DEFAULT;
     kw_config.inv = INVERT_DEFAULT;
     kw_config.inv_sc = INVERT_SCROLL_DEFAULT;
@@ -77,7 +77,7 @@ bool is_mouse_record_kb(uint16_t keycode, keyrecord_t* record) {
             return true;
         default:
             return false;
-    }   
+    }
 
     return  is_mouse_record_user(keycode, record);
 }
@@ -240,7 +240,7 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
         keycode_up = keymap_key_to_keycode(layer, key_up);
         keycode_left = keymap_key_to_keycode(layer, key_left);
         keycode_right = keymap_key_to_keycode(layer, key_right);
-        keycode_down = keymap_key_to_keycode(layer, key_down);      
+        keycode_down = keymap_key_to_keycode(layer, key_down);
 
         // 斜めを除外
         if(kw_config.dpad_exclusion){
@@ -339,7 +339,7 @@ void cycle_mode(void){
 }
 // 一時的モード変更
 void is_scroll_mode(bool is_force_scrolling){
-    force_scrolling = is_force_scrolling; 
+    force_scrolling = is_force_scrolling;
     clear_keyinput();
 }
 void is_cursor_mode(bool is_force_cursoring){

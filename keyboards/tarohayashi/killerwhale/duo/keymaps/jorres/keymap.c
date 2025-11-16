@@ -291,6 +291,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         LT(SYMBOLS, KC_BSPC), LANG,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
+    ),
     [HOGWARTS] = LAYOUT(
         // 左手
          KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4, // this line modified from base
@@ -313,7 +314,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         LT(SYMBOLS, KC_BSPC), LANG,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
-    ),
     ),
 };
 
@@ -361,6 +361,126 @@ static uint16_t r_ctl_timer = 0;
 static bool r_ctl_alone = false;
 static bool registered_r_ctl = false;
 
+// Global flag to indicate BASE layer animation is active
+bool rgb_animation_active = false;
+
+// Base layer animation state
+uint16_t base_anim_timer = 0;  // Non-static for external access
+#define BASE_ANIM_INTERVAL 500  // Change color every 500ms
+
+// Corner LED indices (from add_rgblayers.c base_layer definition)
+static const uint8_t corner_leds[] = {0, 1, 2, 27, 33, 34, 35, 60};
+#define CORNER_LED_COUNT 8
+
+// Color palette for base layer animation
+static const uint8_t base_anim_colors[][3] = {
+    {HSV_WHITE},
+    {HSV_CYAN},
+    {HSV_ORANGE}
+};
+#define BASE_ANIM_COLOR_COUNT 3
+
+// Current color index for each corner LED (track state to reapply all each frame)
+static uint8_t corner_led_colors[CORNER_LED_COUNT] = {0, 0, 0, 0, 0, 0, 0, 0};  // All start white (index 0)
+
+// Layer color definitions (HSV for corner LEDs)
+// Format: {H, S, V} - same corners for all layers, just different colors
+static const uint8_t layer_corner_colors[][3] = {
+    {HSV_WHITE},   // BASE (0)
+    {HSV_YELLOW},  // NAVIGATION (1)
+    {HSV_WHITE},   // SYMBOLS (2)
+    {HSV_AZURE},   // NUMBERS (3)
+    {HSV_WHITE},   // SC_MAIN (4)
+    {HSV_AZURE},   // SC_SEC (5)
+    {HSV_WHITE},   // SC_THI (6)
+    {HSV_CORAL},   // HOGWARTS (7)
+};
+
+// Track current layer for change detection
+static uint8_t current_rgb_layer = 0;
+
+// Helper function to apply all LED colors (sets entire LED array explicitly)
+void apply_base_layer_leds(void) {
+    // Only update the one corner LED that changed (minimize rgblight_sethsv_at calls)
+    // This is called after corner_led_colors is updated
+    for (int i = 0; i < CORNER_LED_COUNT; i++) {
+        uint8_t color_idx = corner_led_colors[i];
+        uint8_t h = base_anim_colors[color_idx][0];
+        uint8_t s = base_anim_colors[color_idx][1];
+        uint8_t v = base_anim_colors[color_idx][2];
+        rgblight_sethsv_at(h, s, v, corner_leds[i]);
+    }
+}
+
+// Helper function to initialize base layer animation (all corners to white)
+void init_base_layer_animation(void) {
+    // Clear all LEDs first (only on init)
+    rgblight_sethsv_range(HSV_BLACK, 0, RGBLIGHT_LED_COUNT);
+    // Reset all corner LEDs to white (color index 0)
+    for (int i = 0; i < CORNER_LED_COUNT; i++) {
+        corner_led_colors[i] = 0;  // White
+    }
+    apply_base_layer_leds();
+}
+
+// Helper function to change one random corner LED to a random color
+void animate_base_layer(void) {
+    // Pick a random corner LED index
+    uint8_t corner_idx = rand() % CORNER_LED_COUNT;
+    // Pick a random color from palette
+    uint8_t color_idx = rand() % BASE_ANIM_COLOR_COUNT;
+    // Update the tracked color
+    corner_led_colors[corner_idx] = color_idx;
+    // Only update the ONE LED that changed (not all 8)
+    uint8_t h = base_anim_colors[color_idx][0];
+    uint8_t s = base_anim_colors[color_idx][1];
+    uint8_t v = base_anim_colors[color_idx][2];
+    rgblight_sethsv_at(h, s, v, corner_leds[corner_idx]);
+}
+
+// Helper function to apply static layer colors (non-BASE layers)
+void apply_static_layer_colors(uint8_t layer_idx) {
+    // Clamp layer index to valid range
+    if (layer_idx > 7) layer_idx = 0;
+
+    // Set all LEDs to black first
+    rgblight_sethsv_range(HSV_BLACK, 0, RGBLIGHT_LED_COUNT);
+
+    // Set corner LEDs to layer color
+    uint8_t h = layer_corner_colors[layer_idx][0];
+    uint8_t s = layer_corner_colors[layer_idx][1];
+    uint8_t v = layer_corner_colors[layer_idx][2];
+
+    for (int i = 0; i < CORNER_LED_COUNT; i++) {
+        rgblight_sethsv_at(h, s, v, corner_leds[i]);
+    }
+}
+
+// Main function called on layer change - applies appropriate lighting
+void apply_layer_lighting(layer_state_t state) {
+    uint8_t new_layer = get_highest_layer(state);
+
+    if (new_layer == BASE) {
+        // Entering BASE layer: start animation
+        if (!rgb_animation_active) {
+            rgb_animation_active = true;
+            srand(timer_read());
+            // Clear all LEDs first, then apply animation colors
+            rgblight_sethsv_range(HSV_BLACK, 0, RGBLIGHT_LED_COUNT);
+            apply_base_layer_leds();
+            base_anim_timer = timer_read();
+        }
+    } else {
+        // Not BASE layer: apply static colors
+        if (rgb_animation_active) {
+            rgb_animation_active = false;
+        }
+        apply_static_layer_colors(new_layer);
+    }
+
+    current_rgb_layer = new_layer;
+}
+
 // behavior of my custom right modifiers:
 // if tapped alone within tapping term, should just send their key.
 // if tapped, held and tapped other key while holding (happens when fast typing),
@@ -370,7 +490,6 @@ static bool registered_r_ctl = false;
 // we have to write code in multiple places: variable declarations,
 // code in process_record_user that should trigger when the SUBSEQUENT key is pressed,
 // and code in process_record_user's switch to trigger when the actual key is pressed.
-
 void matrix_scan_user(void) {
     if (i_esc_pressed && timer_elapsed(i_esc_timer) >= TAPPING_TERM) {
         i_esc_pressed = false;
@@ -382,9 +501,20 @@ void matrix_scan_user(void) {
         set_scroll_mode();
     }
 
-    if (!rgb_initialized && timer_elapsed(rgb_initialized_timer) > 100) {
+    if (is_keyboard_master() && !rgb_initialized && timer_elapsed(rgb_initialized_timer) > 100) {
         rgblight_enable();
         rgb_initialized = true;
+        rgb_animation_active = true;
+        srand(timer_read());
+        init_base_layer_animation();
+        base_anim_timer = timer_read();
+    }
+
+    if (is_keyboard_master() && rgb_animation_active && get_highest_layer(layer_state) == BASE) {
+        if (timer_elapsed(base_anim_timer) > BASE_ANIM_INTERVAL) {
+            animate_base_layer();
+            base_anim_timer = timer_read();
+        }
     }
 }
 
@@ -955,18 +1085,6 @@ void write_layer_to_oled(void) {
         case BASE:
             oled_write_ln_P(PSTR("BASE"), false);
             break;
-        case HOGWARTS:
-            oled_write_ln_P(PSTR("HOGWARTS"), false);
-            break;
-        case HOGWARTS:
-            oled_write_ln_P(PSTR("HOGWARTS"), false);
-            break;
-        case HOGWARTS:
-            oled_write_ln_P(PSTR("HOGWARTS"), false);
-            break;
-        case HOGWARTS:
-            oled_write_ln_P(PSTR("HOGWARTS"), false);
-            break;
         case SYMBOLS:
             oled_write_ln_P(PSTR("SYMBOLS"), false);
             break;
@@ -990,6 +1108,9 @@ void write_layer_to_oled(void) {
             break;
         case SC_THI:
             oled_write_ln_P(PSTR("SC_THI"), false);
+            break;
+        case HOGWARTS:
+            oled_write_ln_P(PSTR("HOGWARTS"), false);
             break;
         default:
             oled_write_ln_P(PSTR("Undefined"), false);
