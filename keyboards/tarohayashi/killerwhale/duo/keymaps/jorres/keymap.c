@@ -13,11 +13,12 @@ enum layer_number {
     NAVIGATION,
     SYMBOLS,
     NUMBERS,
-    QUD,
-    QUD_2,
+    // QUD,
+    // QUD_2,
     SC_MAIN,
     SC_SEC,
     SC_THI,
+    HOGWARTS,
 };
 
 enum custom_keycodes {
@@ -92,7 +93,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
          // KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4,
-        KC_TAB,  KC_Q,      KC_1,    MO(NUMBERS), TO(SC_MAIN), KC_J,
+        KC_TAB,  KC_Q,      KC_1,    MO(NUMBERS), TO(HOGWARTS), KC_J,
         KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
         KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
         KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
@@ -115,7 +116,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [NAVIGATION] = LAYOUT(
         // 左手
-        RGB_TOG, TO(QUD), KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
+        RGB_TOG, _______, KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
         _______, TMUX_1,  TMUX_2,  TMUX_3,  TMUX_4,  TMUX_5,
         _______, _______, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XX1,
                  _______, _______, _______, _______, TM_SESS,
@@ -125,7 +126,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,                            _______,
 
         // 右手
-        KB_BRID, KB_BRIU, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______,
         TMUX_6,  TMUX_7,  TMUX_8,  TMUX_9,  TMUX_10, _______,
         NAV_XX2, NAV_XX3, KC_WBAK, KC_WREF, KC_WFWD, _______,
         _______, TM_NWIN, _______, _______, _______,
@@ -178,50 +179,50 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______,          _______,
         _______, _______,                            _______
     ),
-    [QUD] = LAYOUT(
-        // 左手
-        KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4,
-        KC_LCTL, KC_LEFT,      KC_UP,       KC_E, KC_R, KC_T,
-        KC_LSFT, KC_Z,      KC_DOWN,       KC_RIGHT, KC_F, KC_G,
-        _______,   KC_X, KC_C, KC_V, KC_B,
-        MO(NAVIGATION),
-        LT(SYMBOLS, KC_SPC), KC_ENT,
-        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
-        _______, _______,                    _______,
+    // [QUD] = LAYOUT(
+    //     // 左手
+    //     KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4,
+    //     KC_LCTL, KC_LEFT,      KC_UP,       KC_E, KC_R, KC_T,
+    //     KC_LSFT, KC_Z,      KC_DOWN,       KC_RIGHT, KC_F, KC_G,
+    //     _______,   KC_X, KC_C, KC_V, KC_B,
+    //     MO(NAVIGATION),
+    //     LT(SYMBOLS, KC_SPC), KC_ENT,
+    //     KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
+    //     _______, _______,                    _______,
 
 
-        // 右手
-        KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_Y,    KC_U,    I_ESC,    KC_O,    KC_P,    OSL(QUD_2),
-        KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, QUOT_RSFT,
-        KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
-                                            KC_LEFT_ALT,
-        KC_BSPC, KC_Q,
-        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
-        _______, _______,                     _______
-    ),
-    [QUD_2] = LAYOUT(
-        // 左手
-        KC_TAB,  KC_Q,      KC_END,    MO(NUMBERS), _______, TO(BASE),
-        KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
-        KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
-        _______,   KC_X, KC_C, KC_V, KC_B,
-        MO(NAVIGATION),
-        LT(SYMBOLS, KC_SPC), KC_ENT,
-        _______, _______, _______, R_CHMOD,  _______,
-        _______, _______,                    _______,
+    //     // 右手
+    //     KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
+    //     KC_Y,    KC_U,    I_ESC,    KC_O,    KC_P,    OSL(QUD_2),
+    //     KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, QUOT_RSFT,
+    //     KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,
+    //                                         KC_LEFT_ALT,
+    //     KC_BSPC, KC_Q,
+    //     KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+    //     _______, _______,                     _______
+    // ),
+    // [QUD_2] = LAYOUT(
+    //     // 左手
+    //     KC_TAB,  KC_Q,      KC_END,    MO(NUMBERS), _______, TO(BASE),
+    //     KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
+    //     KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
+    //     _______,   KC_X, KC_C, KC_V, KC_B,
+    //     MO(NAVIGATION),
+    //     LT(SYMBOLS, KC_SPC), KC_ENT,
+    //     _______, _______, _______, R_CHMOD,  _______,
+    //     _______, _______,                    _______,
 
 
-        // 右手
-        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   _______,
-        KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
-        KC_F11,  KC_F12,  KC_A,  KC_W,  KC_E,  _______,
-        KC_R,  KC_T,  KC_Z,  KC_S,  KC_D,
-                                            KC_0,
-        KC_F,    KC_G,
-        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
-        _______, _______,                    _______
-    ),
+    //     // 右手
+    //     KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   _______,
+    //     KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
+    //     KC_F11,  KC_F12,  KC_A,  KC_W,  KC_E,  _______,
+    //     KC_R,  KC_T,  KC_Z,  KC_S,  KC_D,
+    //                                         KC_0,
+    //     KC_F,    KC_G,
+    //     KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+    //     _______, _______,                    _______
+    // ),
     [SC_MAIN] = LAYOUT(
         // 左手
         CTLSHFT,  KC_Q,      KC_1,       KC_2, KC_3, KC_4,
@@ -290,6 +291,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         LT(SYMBOLS, KC_BSPC), LANG,
         KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
         _______, _______,                     _______
+    [HOGWARTS] = LAYOUT(
+        // 左手
+         KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4, // this line modified from base
+        KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
+        KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
+        KC_X,   KC_X, KC_C, KC_V, KC_B,
+        MO(NAVIGATION),
+        KC_SPC, KC_ENT, // first key modified
+        _______, _______, KC_LALT, KC_ESC,  _______,
+        // KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
+        _______, _______,                    _______,
+
+
+        // 右手
+        TO(BASE),  HARPOON_1, HARPOON_2,  KC_0,    KC_F11,  KC_DELETE, // first key modified
+        KC_Y,    KC_U,      I_ESC,      KC_O,    KC_P,    LBRC_RCTL,
+        KC_H,    KC_J,      KC_K,       KC_L,    KC_SCLN, QUOT_RSFT,
+        KC_N,    KC_M,      KC_COMM,    KC_DOT,  KC_SLSH,
+                                                 MO(NAVIGATION),
+        LT(SYMBOLS, KC_BSPC), LANG,
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+        _______, _______,                     _______
+    ),
     ),
 };
 
@@ -931,6 +955,18 @@ void write_layer_to_oled(void) {
         case BASE:
             oled_write_ln_P(PSTR("BASE"), false);
             break;
+        case HOGWARTS:
+            oled_write_ln_P(PSTR("HOGWARTS"), false);
+            break;
+        case HOGWARTS:
+            oled_write_ln_P(PSTR("HOGWARTS"), false);
+            break;
+        case HOGWARTS:
+            oled_write_ln_P(PSTR("HOGWARTS"), false);
+            break;
+        case HOGWARTS:
+            oled_write_ln_P(PSTR("HOGWARTS"), false);
+            break;
         case SYMBOLS:
             oled_write_ln_P(PSTR("SYMBOLS"), false);
             break;
@@ -940,12 +976,12 @@ void write_layer_to_oled(void) {
         case NAVIGATION:
             oled_write_ln_P(PSTR("NAVIGATION"), false);
             break;
-        case QUD:
-            oled_write_ln_P(PSTR("QUD"), false);
-            break;
-        case QUD_2:
-            oled_write_ln_P(PSTR("QUD_2"), false);
-            break;
+        // case QUD:
+        //     oled_write_ln_P(PSTR("QUD"), false);
+        //     break;
+        // case QUD_2:
+        //     oled_write_ln_P(PSTR("QUD_2"), false);
+        //     break;
         case SC_MAIN:
             oled_write_ln_P(PSTR("SC_MAIN"), false);
             break;
