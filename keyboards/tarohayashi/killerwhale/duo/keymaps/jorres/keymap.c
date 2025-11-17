@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
-
 enum layer_number {
     BASE = 0,
     NAVIGATION,
@@ -372,21 +370,6 @@ static const uint8_t corner_leds_right[] = {33, 34, 35, 60}; // Right half corne
 // Track if RGB needs update (for slave sync)
 static uint8_t last_synced_layer = 255;
 
-// RPC sync data structure - master sends this to slave
-typedef struct _rgb_sync_t {
-    uint8_t corner_colors[4];  // corner_led_colors state
-    uint8_t current_layer;
-    bool animation_active;
-} rgb_sync_t;
-
-int from_slave = 4;
-
-// Debug: track sync count and last received data (for OLED)
-static uint16_t rpc_sync_count = 0;
-static rgb_sync_t last_received_sync = {0};
-static uint32_t master_send_count = 0;  // Track master sends
-static bool master_send_result = false; // Track last send result
-
 // Color palette for base layer animation
 static const uint8_t base_anim_colors[][3] = {
     {HSV_WHITE},
@@ -414,10 +397,9 @@ static const uint8_t layer_corner_colors[][3] = {
 // Track current layer for change detection
 static uint8_t current_rgb_layer = 0;
 
-// Helper function to apply all LED colors for LEFT half only (master)
-// Slave handles right half via RPC sync
+// Helper function to apply all LED colors for BOTH halves
 void apply_base_layer_leds(void) {
-    // Apply to left half corners only
+    // Apply to left half corners
     for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
         uint8_t color_idx = corner_led_colors[i];
         uint8_t h = base_anim_colors[color_idx][0];
@@ -425,14 +407,20 @@ void apply_base_layer_leds(void) {
         uint8_t v = base_anim_colors[color_idx][2];
         rgblight_sethsv_at(h, s, v, corner_leds_left[i]);
     }
+    // Apply same colors to right half corners (mirror effect)
+    for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
+        uint8_t color_idx = corner_led_colors[i];
+        uint8_t h = base_anim_colors[color_idx][0];
+        uint8_t s = base_anim_colors[color_idx][1];
+        uint8_t v = base_anim_colors[color_idx][2];
+        rgblight_sethsv_at(h, s, v, corner_leds_right[i]);
+    }
 }
 
 // Helper function to initialize base layer animation (all corners to white)
 void init_base_layer_animation(void) {
-    // Clear left half LEDs first
-    for (int i = 0; i < 33; i++) {
-        rgblight_sethsv_at(HSV_BLACK, i);
-    }
+    // Clear all LEDs first (both halves)
+    rgblight_sethsv_range(HSV_BLACK, 0, RGBLIGHT_LED_COUNT);
     // Reset all corner LEDs to white (color index 0)
     for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
         corner_led_colors[i] = 0;  // White
@@ -448,11 +436,12 @@ void animate_base_layer(void) {
     uint8_t color_idx = rand() % BASE_ANIM_COLOR_COUNT;
     // Update the tracked color
     corner_led_colors[corner_idx] = color_idx;
-    // Update left half only (slave syncs via RPC)
+    // Update both halves (same corner on both sides)
     uint8_t h = base_anim_colors[color_idx][0];
     uint8_t s = base_anim_colors[color_idx][1];
     uint8_t v = base_anim_colors[color_idx][2];
     rgblight_sethsv_at(h, s, v, corner_leds_left[corner_idx]);
+    rgblight_sethsv_at(h, s, v, corner_leds_right[corner_idx]);
 }
 
 // Helper function to apply static layer colors (non-BASE layers)
@@ -460,18 +449,18 @@ void apply_static_layer_colors(uint8_t layer_idx) {
     // Clamp layer index to valid range
     if (layer_idx > 7) layer_idx = 0;
 
-    // Set left half LEDs to black first
-    for (int i = 0; i < 33; i++) {
-        rgblight_sethsv_at(HSV_BLACK, i);
-    }
+    // Set all LEDs to black first (both halves)
+    rgblight_sethsv_range(HSV_BLACK, 0, RGBLIGHT_LED_COUNT);
 
-    // Set corner LEDs to layer color (left half only, slave syncs via RPC)
+    // Set corner LEDs to layer color
     uint8_t h = layer_corner_colors[layer_idx][0];
     uint8_t s = layer_corner_colors[layer_idx][1];
     uint8_t v = layer_corner_colors[layer_idx][2];
 
+    // Set both halves
     for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
         rgblight_sethsv_at(h, s, v, corner_leds_left[i]);
+        rgblight_sethsv_at(h, s, v, corner_leds_right[i]);
     }
 }
 
@@ -484,10 +473,8 @@ void apply_layer_lighting(layer_state_t state) {
         if (!rgb_animation_active) {
             rgb_animation_active = true;
             srand(timer_read());
-            // Clear left half LEDs first, then apply animation colors
-            for (int i = 0; i < 33; i++) {
-                rgblight_sethsv_at(HSV_BLACK, i);
-            }
+            // Clear all LEDs first, then apply animation colors (both halves)
+            rgblight_sethsv_range(HSV_BLACK, 0, RGBLIGHT_LED_COUNT);
             apply_base_layer_leds();
             base_anim_timer = timer_read();
         }
@@ -523,12 +510,12 @@ void matrix_scan_user(void) {
         set_scroll_mode();
     }
 
-    // if (rgb_animation_active && get_highest_layer(layer_state) == BASE) {
-    //     if (timer_elapsed(base_anim_timer) > BASE_ANIM_INTERVAL) {
-    //         animate_base_layer();
-    //         base_anim_timer = timer_read();
-    //     }
-    // }
+    if (rgb_animation_active && get_highest_layer(layer_state) == BASE) {
+        if (timer_elapsed(base_anim_timer) > BASE_ANIM_INTERVAL) {
+            animate_base_layer();
+            base_anim_timer = timer_read();
+        }
+    }
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -960,7 +947,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 
 /* Luna logic */
-__attribute__((unused))
 static void render_luna(int LUNA_X, int LUNA_Y) {
     /* Sit */
     static const char PROGMEM sit[2][ANIM_SIZE] = {/* 'sit1', 32x22px */
@@ -1098,6 +1084,12 @@ void write_layer_to_oled(void) {
         case NAVIGATION:
             oled_write_ln_P(PSTR("NAVIGATION"), false);
             break;
+        // case QUD:
+        //     oled_write_ln_P(PSTR("QUD"), false);
+        //     break;
+        // case QUD_2:
+        //     oled_write_ln_P(PSTR("QUD_2"), false);
+        //     break;
         case SC_MAIN:
             oled_write_ln_P(PSTR("SC_MAIN"), false);
             break;
@@ -1123,45 +1115,12 @@ void write_layer_to_oled(void) {
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
-        // Master: show debug info instead of Luna for now
-        oled_clear();
-        char buf[32];
-        oled_write_ln_P(PSTR("MASTER"), false);
-        sprintf(buf, "snd:%lu", (unsigned long)master_send_count);
-        oled_write_ln(buf, false);
-        sprintf(buf, "ok:%d", master_send_result ? 1 : 0);
-        oled_write_ln(buf, false);
-        sprintf(buf, "c:%d%d%d%d",
-            corner_led_colors[0],
-            corner_led_colors[1],
-            corner_led_colors[2],
-            corner_led_colors[3]);
-        oled_write_ln(buf, false);
-        sprintf(buf, "L:%d A:%d",
-            current_rgb_layer,
-            rgb_animation_active ? 1 : 0);
-        oled_write_ln(buf, false);
-        sprintf(buf, "F:%d", from_slave);
-        oled_write_ln(buf, false);
+        current_wpm   = get_current_wpm();
+        led_usb_state = host_keyboard_led_state();
+        render_luna(0, 13);
     } else {
         oled_clear();
         write_layer_to_oled();
-
-        // Debug: show RPC sync info on slave OLED
-        char buf[32];
-        oled_write_ln_P(PSTR("RPC Sync:"), false);
-        sprintf(buf, "cnt:%d", rpc_sync_count);
-        oled_write_ln(buf, false);
-        sprintf(buf, "c:%d%d%d%d",
-            last_received_sync.corner_colors[0],
-            last_received_sync.corner_colors[1],
-            last_received_sync.corner_colors[2],
-            last_received_sync.corner_colors[3]);
-        oled_write_ln(buf, false);
-        sprintf(buf, "L:%d A:%d",
-            get_highest_layer(layer_state),
-            last_received_sync.animation_active ? 1 : 0);
-        oled_write_ln(buf, false);
     }
 
     return false;
@@ -1175,130 +1134,25 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 }
 
 void matrix_init_user(void) {
-    // init_base_layer_animation();
-    // rgb_animation_active = true;
-    // srand(timer_read());
-    // base_anim_timer = timer_read();
+    init_base_layer_animation();
+    rgb_animation_active = true;
+    srand(timer_read());
+    base_anim_timer = timer_read();
 }
 
-typedef struct _master_to_slave_t {
-    uint8_t m2s_data;
-} master_to_slave_t;
-
-typedef struct _slave_to_master_t {
-    uint8_t s2m_data;
-} slave_to_master_t;
-
-void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
-    // const rgb_sync_t* sync_data = (const rgb_sync_t*)in_data;
-    // rpc_sync_count = -100;
-
-    // if (in_buflen == sizeof(rgb_sync_t)) {
-    //     rpc_sync_count++;
-    //     rgb_sync_t last_received_sync;
-    //     memcpy(&last_received_sync, in_data, sizeof(last_received_sync));
-    // } else {
-    //     sync_count--;
-    // }
-
-    // // Update local state from master
-    // for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
-    //     corner_led_colors[i] = sync_data->corner_colors[i];
-    // }
-    // rgb_animation_active = sync_data->animation_active;
-    // current_rgb_layer = sync_data->current_layer;
-    // last_synced_layer = sync_data->current_layer;
-
-    // // Apply the colors to LEDs (slave applies to its own half using global indices)
-    // if (rgb_animation_active) {
-    //     // Animation mode - apply current corner colors
-    //     for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
-    //         uint8_t color_idx = corner_led_colors[i];
-    //         uint8_t h = base_anim_colors[color_idx][0];
-    //         uint8_t s = base_anim_colors[color_idx][1];
-    //         uint8_t v = base_anim_colors[color_idx][2];
-    //         rgblight_sethsv_at(h, s, v, corner_leds_right[i]);
-    //     }
-    // } else {
-    //     // Static layer color mode
-    //     if (current_rgb_layer <= 7) {
-    //         uint8_t h = layer_corner_colors[current_rgb_layer][0];
-    //         uint8_t s = layer_corner_colors[current_rgb_layer][1];
-    //         uint8_t v = layer_corner_colors[current_rgb_layer][2];
-    //         for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
-    //             rgblight_sethsv_at(h, s, v, corner_leds_right[i]);
-    //         }
-    //     }
-    // }
-    //
-    rpc_sync_count++;
-    master_to_slave_t m2s;
-    // if (in_buflen == sizeof(master_to_slave_t)) {
-        memcpy(&m2s, in_data, sizeof(m2s));
-    // }
-    // slave_to_master_t s2m;
-    // s2m.s2m_data = m2s.m2s_data + 5; // whatever comes in, add 5 so it can be sent back/
-                                     //
-    slave_to_master_t *s2m = (slave_to_master_t*)out_data;
-    s2m->s2m_data = rand() % 10;
-    //                                   //
-    // memcpy(out_data, &s2m, sizeof(s2m));
-}
-
-
-void keyboard_post_init_user(void) {
-    transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
-}
-
-
-// void housekeeping_task_user(void) {
-//     if (is_keyboard_master()) {
-//         // MASTER: Check for layer changes and apply lighting to master's LEDs
-//         // uint8_t current_layer = get_highest_layer(layer_state);
-//         // if (current_layer != last_synced_layer) {
-//         //     apply_layer_lighting(layer_state);
-//         // }
-
-//         // MASTER: Sync RGB state to slave at animation interval
-//         static uint32_t last_rgb_sync = 0;
-//         if (timer_elapsed32(last_rgb_sync) > BASE_ANIM_INTERVAL) {
-//             last_rgb_sync = timer_read32();
-
-//             // Prepare sync data
-//             // rgb_sync_t sync_data;
-//             // for (int i = 0; i < CORNER_LED_COUNT_PER_HALF; i++) {
-//             //     sync_data.corner_colors[i] = corner_led_colors[i];
-//             // }
-//             // sync_data.current_layer = current_rgb_layer;
-//             // sync_data.animation_active = rgb_animation_active;
-
-//             // // Send to slave (no response needed)
-//             // master_send_result = transaction_rpc_send(USER_SYNC_A, sizeof(sync_data), &sync_data);
-//             // master_send_count++;
-
-//             slave_to_master_t s2m = {0};
-//             if (transaction_rpc_exec(USER_SYNC_A, sizeof(sync_data), &sync_data, sizeof(s2m), &s2m)) {
-//               from_slave = s2m.s2m_data;
-//             } else {
-//               from_slave = -1;
-//             }
-//         }
-//     }
-//     // Slave receives via rgb_sync_slave_handler - no polling needed
-// }
+// This runs on BOTH master and slave - catches layer changes on the slave
+// since layer_state_set_user() is NOT called on slave when state is synced
 void housekeeping_task_user(void) {
-    if (is_keyboard_master()) {
-        // Interact with slave every 500ms
-        static uint32_t last_sync = 0;
-        if (timer_elapsed32(last_sync) > 500) {
-            master_to_slave_t m2s = {6};
-            slave_to_master_t s2m = {-2};
-            if(transaction_rpc_exec(USER_SYNC_A, sizeof(m2s), &m2s, sizeof(s2m), &s2m)) {
-                last_sync = timer_read32();
-                from_slave = s2m.s2m_data;
-            } else {
-                from_slave = -1;
-            }
-        }
+    uint8_t current_layer = get_highest_layer(layer_state);
+
+    // Check if layer changed (works for both master and slave)
+    if (current_layer != last_synced_layer) {
+        apply_layer_lighting(layer_state);
+    }
+
+    static uint32_t last_sync = 0;
+    if (timer_elapsed32(last_sync) > 500) {
+        animate_base_layer();
+        last_sync = timer_read32();
     }
 }
