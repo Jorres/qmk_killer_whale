@@ -6,6 +6,12 @@
 
 // NOTE: We no longer use RGBLIGHT_LAYERS as it conflicts with direct LED control.
 // All RGB logic is now handled in keymap.c using rgblight_sethsv_range/at functions.
+//
+// extern bool rgb_animation_active;
+// extern uint16_t base_anim_timer;
+
+// // External function from keymap.c for applying layer colors
+// extern void init_base_layer_animation(void);
 
 // 初期化 - empty, RGB is initialized in keymap.c
 void keyboard_post_init_kb(void) {

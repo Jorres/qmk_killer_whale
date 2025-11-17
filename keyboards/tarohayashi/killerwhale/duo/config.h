@@ -97,14 +97,13 @@
 // #define RGBLIGHT_LAYERS
 // #define RGBLIGHT_MAX_LAYERS 10
 #define RGBLIGHT_SPLIT  // Enable split RGB sync
-#define RGBLIGHT_SLEEP  // Enable split RGB sync
 #define RGBLIGHT_DEFAULT_VAL 0  // Enable split RGB sync
-#define RGBLED_SPLIT { 33, 33 }
-#define RGBLIGHT_LED_COUNT 66
-#define RGBLIGHT_LAYERS_RETAIN_VAL
 
 // UNICODE
 #define UNICODE_KEY_LNX LCTL(LSFT(KC_U))
 #define UNICODE_SELECTED_MODES UNICODE_MODE_LINUX
 #define UNICODE_CYCLE_PERSIST false
 #define UNICODE_TYPE_DELAY 100
+
+// Custom split transaction for RGB sync
+#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_A
