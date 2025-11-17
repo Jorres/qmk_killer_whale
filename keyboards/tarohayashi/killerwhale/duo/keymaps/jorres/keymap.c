@@ -12,10 +12,12 @@
 #include "process_record.h"
 #include "rgb_layers.h"
 
-#define LUNA_ENABLE  // Comment out to disable Luna
-
 #ifdef LUNA_ENABLE
 #include "luna.h"
+#endif
+
+#ifdef MATRIX_ENABLE
+#include "matrix_gif.h"
 #endif
 
 enum layer_number {
@@ -285,7 +287,7 @@ combo_t key_combos[] = {
 
 void matrix_scan_user(void) {
     custom_keycodes_matrix_scan();
-    rgb_layers_scan(BASE);
+    rgb_layers_scan(0);
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -303,7 +305,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (is_keyboard_master()) {
-        return OLED_ROTATION_90;
+        return OLED_ROTATION_0;
     } else {
         return rotation;
     }
@@ -311,16 +313,24 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 
 typedef struct _master_to_slave_t {
-    uint8_t m2s_data;
+    uint8_t led_count;               // Number of LEDs in this message
+    uint8_t led_indices[8];          // LED indices (global addressing)
+    uint8_t led_hsv[8][3];           // HSV for each LED
 } master_to_slave_t;
+
+typedef struct _layer_to_slave_t {
+    uint8_t layer_idx;
+} layer_to_slave_t;
 
 typedef struct _slave_to_master_t {
     uint8_t s2m_data;
 } slave_to_master_t;
 
-master_to_slave_t kb_state;
-uint32_t          last_slave_sync_time = 0;
+// Slave-side storage for received LED state
+static master_to_slave_t received_led_state = {0};
 
+
+uint8_t layer_on_slave = 255;  // Initialize to see if it changes
 void write_layer_to_oled(void) {
     oled_write_P(PSTR("Layer: "), false);
     switch (get_highest_layer(layer_state)) {
@@ -364,10 +374,24 @@ void write_layer_to_oled(void) {
         oled_write_ln_P(PSTR("right"), false);
     }
 
+    // Show received LED state on slave
     if (!is_keyboard_master()) {
-      char buf[16];
-      snprintf(buf, sizeof(buf), "M2S: %d", kb_state.m2s_data);
-      oled_write_ln(buf, false);
+        char buf[22];
+        snprintf(buf, sizeof(buf), "LEDs: %d", received_led_state.led_count);
+        oled_write_ln(buf, false);
+        for (uint8_t i = 0; i < received_led_state.led_count && i < 2; i++) {
+            snprintf(buf, sizeof(buf), "#%d:%d,%d,%d",
+                layer_on_slave,
+                layer_on_slave,
+                layer_on_slave,
+                layer_on_slave
+                // received_led_state.led_indices[i],
+                // received_led_state.led_hsv[i][0],
+                // received_led_state.led_hsv[i][1],
+                // received_led_state.led_hsv[i][2]
+            );
+            oled_write_ln(buf, false);
+        }
     }
 }
 
@@ -377,13 +401,19 @@ bool oled_task_user(void) {
         current_wpm   = get_current_wpm();
         led_usb_state = host_keyboard_led_state();
         render_luna(0, 13);
+#elif defined(MATRIX_ENABLE)
+        render_matrix_animation();
 #else
         oled_clear();
         write_layer_to_oled();
 #endif
     } else {
+#ifdef MATRIX_ENABLE
+        render_matrix_animation();
+#else
         oled_clear();
         write_layer_to_oled();
+#endif
     }
 
     return false;
@@ -402,40 +432,77 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
         const master_to_slave_t* m2s = (const master_to_slave_t*)in_data;
         slave_to_master_t* s2m = (slave_to_master_t*)out_data;
 
-        // Perform calculation on slave: multiply by 10 and add 7
-        s2m->s2m_data = (m2s->m2s_data * 10) + 7;
+        // Apply LED colors received from master (slave will only set its own LEDs)
+        for (uint8_t i = 0; i < m2s->led_count && i < 8; i++) {
+            rgblight_sethsv_at(
+                m2s->led_hsv[i][0],  // H
+                m2s->led_hsv[i][1],  // S
+                m2s->led_hsv[i][2],  // V
+                m2s->led_indices[i]
+            );
+        }
 
-        // Also store locally on slave
-        memcpy(&kb_state, in_data, sizeof(master_to_slave_t));
-        last_slave_sync_time = timer_read32();
+        // Return confirmation
+        s2m->s2m_data = 1;
+
+        // Store locally on slave for OLED display
+        memcpy(&received_led_state, in_data, sizeof(master_to_slave_t));
+    }
+}
+
+
+extern uint8_t last_synced_layer;
+void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    if (in_buflen == sizeof(layer_to_slave_t)) {
+        const layer_to_slave_t* m2s = (const layer_to_slave_t*)in_data;
+        layer_on_slave = m2s->layer_idx;
+        apply_static_layer_colors(layer_on_slave);
     }
 }
 
 void keyboard_post_init_user(void) {
     transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
+    transaction_register_rpc(USER_SYNC_B, user_sync_b_slave_handler);
     rgb_layers_init();
 }
 
 void housekeeping_task_user(void) {
-    rgb_layers_task(BASE);
-
-    static uint32_t last_sync = 0;
-    if (timer_elapsed32(last_sync) > 500) {
-        animate_base_layer();
-        last_sync = timer_read32();
+    uint8_t current_layer = get_highest_layer(layer_state);
+    if (is_keyboard_master()) {
+        if (rgb_layers_task(0)) {
+            layer_to_slave_t m2s = {current_layer};
+            if (transaction_rpc_send(USER_SYNC_B, sizeof(m2s), &m2s)) {
+                uprintf("triggered layer reload on slave, set to %d\n", current_layer);
+            } else {
+                uprintf("LED sync failed\n");
+            }
+        }
     }
 
     if (is_keyboard_master()) {
-        // Interact with slave every 500ms
         static uint32_t last_sync = 0;
-        if (timer_elapsed32(last_sync) > 500) {
-            master_to_slave_t m2s = {6};
+        if (timer_elapsed32(last_sync) > BASE_ANIM_INTERVAL && current_layer == 0) {
+            master_to_slave_t m2s = {0};
             slave_to_master_t s2m = {0};
+
+            static const uint8_t all_corner_leds[8] = {0, 1, 2, 27, 33, 34, 35, 60};
+            m2s.led_count = 8;
+
+            // Get current corner LED colors from master for all 8 LEDs
+            for (uint8_t i = 0; i < 8; i++) {
+                m2s.led_indices[i] = all_corner_leds[i];
+                // Use corner index (0-3) for both left and right
+                get_corner_led_hsv(i,
+                    &m2s.led_hsv[i][0],
+                    &m2s.led_hsv[i][1],
+                    &m2s.led_hsv[i][2]
+                );
+            }
+
             if (transaction_rpc_exec(USER_SYNC_A, sizeof(m2s), &m2s, sizeof(s2m), &s2m)) {
                 last_sync = timer_read32();
-                dprintf("Sent %d, slave calculated: %d\n", m2s.m2s_data, s2m.s2m_data);
             } else {
-                dprintf("Transaction failed\n");
+                uprintf("LED sync failed\n");
             }
         }
     }

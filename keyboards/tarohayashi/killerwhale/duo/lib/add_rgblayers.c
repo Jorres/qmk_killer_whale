@@ -16,15 +16,11 @@
 // 初期化 - empty, RGB is initialized in keymap.c
 void keyboard_post_init_kb(void) {
     debug_enable=true;
-    debug_matrix=true;
+    // debug_matrix=true;
     keyboard_post_init_user();
 }
 
-// External function from keymap.c for applying layer colors
-extern void apply_layer_lighting(layer_state_t state);
-
 // 発光条件の設定 - delegate to keymap.c
 layer_state_t layer_state_set_user(layer_state_t state) {
-    apply_layer_lighting(state);
     return state;
 }

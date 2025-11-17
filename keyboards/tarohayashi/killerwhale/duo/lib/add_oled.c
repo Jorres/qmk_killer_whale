@@ -31,6 +31,10 @@ void oled_init_addedoled(void){
 
 // OLED表示
 bool oled_task_addedoled(void) {
+#ifdef MATRIX_ENABLE
+    // Skip when using full-screen animation
+    return true;
+#endif
     if(interrupted){
         if(timer_elapsed(interrupted_time) < INTERRUPT_TIME){
             oled_set_cursor(0, 3);
