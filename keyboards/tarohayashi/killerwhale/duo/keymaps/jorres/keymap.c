@@ -309,6 +309,18 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     }
 }
 
+
+typedef struct _master_to_slave_t {
+    uint8_t m2s_data;
+} master_to_slave_t;
+
+typedef struct _slave_to_master_t {
+    uint8_t s2m_data;
+} slave_to_master_t;
+
+master_to_slave_t kb_state;
+uint32_t          last_slave_sync_time = 0;
+
 void write_layer_to_oled(void) {
     oled_write_P(PSTR("Layer: "), false);
     switch (get_highest_layer(layer_state)) {
@@ -351,6 +363,12 @@ void write_layer_to_oled(void) {
     } else {
         oled_write_ln_P(PSTR("right"), false);
     }
+
+    if (!is_keyboard_master()) {
+      char buf[16];
+      snprintf(buf, sizeof(buf), "M2S: %d", kb_state.m2s_data);
+      oled_write_ln(buf, false);
+    }
 }
 
 bool oled_task_user(void) {
@@ -378,7 +396,23 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-void matrix_init_user(void) {
+
+void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    if (in_buflen == sizeof(master_to_slave_t) && out_buflen == sizeof(slave_to_master_t)) {
+        const master_to_slave_t* m2s = (const master_to_slave_t*)in_data;
+        slave_to_master_t* s2m = (slave_to_master_t*)out_data;
+
+        // Perform calculation on slave: multiply by 10 and add 7
+        s2m->s2m_data = (m2s->m2s_data * 10) + 7;
+
+        // Also store locally on slave
+        memcpy(&kb_state, in_data, sizeof(master_to_slave_t));
+        last_slave_sync_time = timer_read32();
+    }
+}
+
+void keyboard_post_init_user(void) {
+    transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
     rgb_layers_init();
 }
 
@@ -389,5 +423,20 @@ void housekeeping_task_user(void) {
     if (timer_elapsed32(last_sync) > 500) {
         animate_base_layer();
         last_sync = timer_read32();
+    }
+
+    if (is_keyboard_master()) {
+        // Interact with slave every 500ms
+        static uint32_t last_sync = 0;
+        if (timer_elapsed32(last_sync) > 500) {
+            master_to_slave_t m2s = {6};
+            slave_to_master_t s2m = {0};
+            if (transaction_rpc_exec(USER_SYNC_A, sizeof(m2s), &m2s, sizeof(s2m), &s2m)) {
+                last_sync = timer_read32();
+                dprintf("Sent %d, slave calculated: %d\n", m2s.m2s_data, s2m.s2m_data);
+            } else {
+                dprintf("Transaction failed\n");
+            }
+        }
     }
 }

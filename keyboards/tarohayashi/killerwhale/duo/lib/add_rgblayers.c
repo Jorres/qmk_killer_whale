@@ -17,6 +17,7 @@
 void keyboard_post_init_kb(void) {
     debug_enable=true;
     debug_matrix=true;
+    keyboard_post_init_user();
 }
 
 // External function from keymap.c for applying layer colors
