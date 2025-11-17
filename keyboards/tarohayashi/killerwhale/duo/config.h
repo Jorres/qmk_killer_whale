@@ -11,9 +11,14 @@
 
 #define OLED_TIMEOUT 60000
 #define OLED_BRIGHTNESS 100
+#define SPLIT_OLED_ENABLE
+#define SPLIT_ACTIVITY_ENABLE
+#define SPLIT_TRANSPORT_MIRROR
 
 #define TAPPING_TERM_PER_KEY
 
+#define SERIAL_DEBUG
+#define SERIAL_USART_SPEED 57600
 //////////////////////
 /*    ユーザー設定    */
 //////////////////////
@@ -84,6 +89,7 @@
 #define SPLIT_HAND_PIN_LOW_IS_LEFT
 #define SPLIT_POINTING_ENABLE
 
+#define SPLIT_TRANSPORT_MIRROR
 #define POINTING_DEVICE_COMBINED
 #define SPLIT_LAYER_STATE_ENABLE
 #define SELECT_SOFT_SERIAL_SPEED 1
@@ -98,6 +104,7 @@
 // #define RGBLIGHT_MAX_LAYERS 10
 #define RGBLIGHT_SPLIT  // Enable split RGB sync
 #define RGBLIGHT_DEFAULT_VAL 0  // Enable split RGB sync
+
 
 // UNICODE
 #define UNICODE_KEY_LNX LCTL(LSFT(KC_U))
