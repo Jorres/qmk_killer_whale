@@ -271,6 +271,7 @@ const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_DELETE, COMBO_END};
 const uint16_t PROGMEM tmux_search[] = {KC_M, KC_DELETE, COMBO_END};
 
 const uint16_t PROGMEM bootloader[] = {KC_Q, KC_W, KC_A, KC_S,  COMBO_END};
+const uint16_t PROGMEM bootloader_right[] = {KC_O, KC_L, KC_P, KC_F11,  COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(lkm, KC_MS_BTN1),
@@ -283,6 +284,7 @@ combo_t key_combos[] = {
     COMBO(tmux_search, TMUX_SEARCH),
 
     COMBO(bootloader, QK_BOOTLOADER),
+    COMBO(bootloader_right, QK_BOOTLOADER),
 };
 
 void matrix_scan_user(void) {
@@ -473,8 +475,6 @@ void housekeeping_task_user(void) {
             layer_to_slave_t m2s = {current_layer};
             if (transaction_rpc_send(USER_SYNC_B, sizeof(m2s), &m2s)) {
                 uprintf("triggered layer reload on slave, set to %d\n", current_layer);
-            } else {
-                uprintf("LED sync failed\n");
             }
         }
     }

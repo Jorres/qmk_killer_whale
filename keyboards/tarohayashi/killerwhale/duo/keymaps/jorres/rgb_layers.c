@@ -90,7 +90,6 @@ void animate_base_layer(void) {
 void apply_layer_lighting(layer_state_t state, uint8_t base_layer_index) {
     uint8_t new_layer = get_highest_layer(state);
 
-    uprintf("base %d\n", base_layer_index);
     if (new_layer == base_layer_index) {
         if (!rgb_animation_active) {
             rgb_animation_active = true;
@@ -121,13 +120,6 @@ void rgb_layers_scan(uint8_t base_layer_index) {
 
 bool rgb_layers_task(uint8_t base_layer_index) {
     uint8_t current_layer = get_highest_layer(layer_state);
-
-    static int i = 0;
-    i++;
-    if (i % 300 == 0) {
-      uprintf("base %d\n", base_layer_index);
-      uprintf("housekeeping %d %d %d\n", last_synced_layer, current_layer, rgb_animation_active);
-    }
 
     if (current_layer != last_synced_layer) {
         uprintf("Layer changed: %d -> %d\n", last_synced_layer, current_layer);

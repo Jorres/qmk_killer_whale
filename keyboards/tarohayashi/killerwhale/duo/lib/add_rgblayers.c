@@ -15,7 +15,7 @@
 
 // 初期化 - empty, RGB is initialized in keymap.c
 void keyboard_post_init_kb(void) {
-    debug_enable=true;
+    // debug_enable=true;
     // debug_matrix=true;
     keyboard_post_init_user();
 }
