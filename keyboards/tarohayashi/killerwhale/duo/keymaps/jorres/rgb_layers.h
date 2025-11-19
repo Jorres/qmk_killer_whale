@@ -13,6 +13,8 @@
 extern bool rgb_animation_active;
 extern uint16_t base_anim_timer;
 
+extern const uint8_t corner_leds[];
+
 // Functions to be called from keymap.c
 void rgb_layers_init(void);
 void rgb_layers_scan(uint8_t base_layer_index);

@@ -5,7 +5,7 @@ bool rgb_animation_active = false;
 uint16_t base_anim_timer = 0;
 
 // Corner LED indices - global addressing (left: 0-32, right: 33-65)
-static const uint8_t corner_leds[] = {0, 1, 2, 27, 33, 34, 35, 60};
+const uint8_t corner_leds[] = {0, 1, 2, 27, 33, 34, 35, 60};
 
 // Track if RGB needs update (for slave sync)
 static uint8_t last_synced_layer = 255;

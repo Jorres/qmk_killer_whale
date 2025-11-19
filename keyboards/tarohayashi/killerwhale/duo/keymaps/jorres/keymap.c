@@ -314,23 +314,18 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 }
 
 
-typedef struct _master_to_slave_t {
+typedef struct _colors_to_slave_t {
     uint8_t led_count;               // Number of LEDs in this message
     uint8_t led_indices[8];          // LED indices (global addressing)
     uint8_t led_hsv[8][3];           // HSV for each LED
-} master_to_slave_t;
+} colors_to_slave_t;
 
 typedef struct _layer_to_slave_t {
     uint8_t layer_idx;
 } layer_to_slave_t;
 
-typedef struct _slave_to_master_t {
-    uint8_t s2m_data;
-} slave_to_master_t;
-
 // Slave-side storage for received LED state
-static master_to_slave_t received_led_state = {0};
-
+static colors_to_slave_t received_led_state = {0};
 
 uint8_t layer_on_slave = 255;  // Initialize to see if it changes
 void write_layer_to_oled(void) {
@@ -430,9 +425,8 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 
 
 void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
-    if (in_buflen == sizeof(master_to_slave_t) && out_buflen == sizeof(slave_to_master_t)) {
-        const master_to_slave_t* m2s = (const master_to_slave_t*)in_data;
-        slave_to_master_t* s2m = (slave_to_master_t*)out_data;
+    if (in_buflen == sizeof(colors_to_slave_t)) {
+        const colors_to_slave_t* m2s = (const colors_to_slave_t*)in_data;
 
         // Apply LED colors received from master (slave will only set its own LEDs)
         for (uint8_t i = 0; i < m2s->led_count && i < 8; i++) {
@@ -444,11 +438,8 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
             );
         }
 
-        // Return confirmation
-        s2m->s2m_data = 1;
-
         // Store locally on slave for OLED display
-        memcpy(&received_led_state, in_data, sizeof(master_to_slave_t));
+        memcpy(&received_led_state, in_data, sizeof(colors_to_slave_t));
     }
 }
 
@@ -463,8 +454,8 @@ void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
 }
 
 void keyboard_post_init_user(void) {
-    transaction_register_rpc(USER_SYNC_A, user_sync_a_slave_handler);
-    transaction_register_rpc(USER_SYNC_B, user_sync_b_slave_handler);
+    transaction_register_rpc(RPC_ANIMATION_STEP, user_sync_a_slave_handler);
+    transaction_register_rpc(SLAVE_LAYER_REFRESH, user_sync_b_slave_handler);
     rgb_layers_init();
 }
 
@@ -473,7 +464,7 @@ void housekeeping_task_user(void) {
     if (is_keyboard_master()) {
         if (rgb_layers_task(0)) {
             layer_to_slave_t m2s = {current_layer};
-            if (transaction_rpc_send(USER_SYNC_B, sizeof(m2s), &m2s)) {
+            if (transaction_rpc_send(SLAVE_LAYER_REFRESH, sizeof(m2s), &m2s)) {
                 uprintf("triggered layer reload on slave, set to %d\n", current_layer);
             }
         }
@@ -482,15 +473,12 @@ void housekeeping_task_user(void) {
     if (is_keyboard_master()) {
         static uint32_t last_sync = 0;
         if (timer_elapsed32(last_sync) > BASE_ANIM_INTERVAL && current_layer == 0) {
-            master_to_slave_t m2s = {0};
-            slave_to_master_t s2m = {0};
+            colors_to_slave_t m2s = {0};
 
-            static const uint8_t all_corner_leds[8] = {0, 1, 2, 27, 33, 34, 35, 60};
             m2s.led_count = 8;
-
             // Get current corner LED colors from master for all 8 LEDs
             for (uint8_t i = 0; i < 8; i++) {
-                m2s.led_indices[i] = all_corner_leds[i];
+                m2s.led_indices[i] = corner_leds[i];
                 // Use corner index (0-3) for both left and right
                 get_corner_led_hsv(i,
                     &m2s.led_hsv[i][0],
@@ -499,7 +487,7 @@ void housekeeping_task_user(void) {
                 );
             }
 
-            if (transaction_rpc_exec(USER_SYNC_A, sizeof(m2s), &m2s, sizeof(s2m), &s2m)) {
+            if (transaction_rpc_send(RPC_ANIMATION_STEP, sizeof(m2s), &m2s)) {
                 last_sync = timer_read32();
             } else {
                 uprintf("LED sync failed\n");
