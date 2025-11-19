@@ -47,4 +47,6 @@ enum custom_keycodes {
     HARPOON_2,
 
     CTLSHFT,
+
+    ANIM_CYCLE,  // Cycle through animation modes
 };

@@ -2,7 +2,6 @@
 
 #include "lib/add_keycodes.h"
 #include "lib/common_killerwhale.h"
-#include "transactions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +10,7 @@
 #include "custom_keycodes.h"
 #include "process_record.h"
 #include "rgb_layers.h"
+#include "animations/interface.h"
 
 #ifdef LUNA_ENABLE
 #include "luna.h"
@@ -43,7 +43,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
         MO(NAVIGATION),
         LT(SYMBOLS, KC_SPC), KC_ENT,
-        _______, _______, KC_LALT, KC_ESC,  _______, // first four are d-pad on the left  half
+        ANIM_CYCLE, _______, KC_LALT, KC_ESC,  _______, // first four are d-pad on the left  half
         // KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,  _______,
         _______, _______,                    _______,
 
@@ -287,9 +287,15 @@ combo_t key_combos[] = {
     COMBO(bootloader_right, QK_BOOTLOADER),
 };
 
+static animation_mode_t current_animation = ANIMATION_UNDERGLOW;
+
 void matrix_scan_user(void) {
     custom_keycodes_matrix_scan();
-    rgb_layers_scan(0);
+
+    // Only run RGB layer scanning for underglow animation
+    if (current_animation == ANIMATION_UNDERGLOW) {
+        rgb_layers_scan(0);
+    }
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -300,6 +306,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef LUNA_ENABLE
     luna_process_record(keycode, record);
 #endif
+
+    // Handle animation mode cycling
+    if (keycode == ANIM_CYCLE && record->event.pressed) {
+        // Clear all LEDs before switching to prevent remnants
+        clear_all_leds();
+
+        // Cycle to next animation mode
+        current_animation = (current_animation + 1) % 2;  // 2 animation modes total
+
+        // Log the change
+        switch (current_animation) {
+            case ANIMATION_UNDERGLOW:
+                uprintf("Switched to UNDERGLOW animation\n");
+                break;
+            case ANIMATION_SEQUENTIAL:
+                uprintf("Switched to SEQUENTIAL animation\n");
+                break;
+        }
+
+        return false;  // Don't trigger animation update for this keycode
+    }
+
+    // Trigger animation on any key press
+    if (record->event.pressed) {
+        update_leds_on_keypress(current_animation);
+    }
 
     return true;
 }
@@ -314,15 +346,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 }
 
 
-typedef struct _colors_to_slave_t {
-    uint8_t led_count;               // Number of LEDs in this message
-    uint8_t led_indices[8];          // LED indices (global addressing)
-    uint8_t led_hsv[8][3];           // HSV for each LED
-} colors_to_slave_t;
-
-typedef struct _layer_to_slave_t {
-    uint8_t layer_idx;
-} layer_to_slave_t;
+// colors_to_slave_t and layer_to_slave_t are now defined in animations/interface.h
 
 // Slave-side storage for received LED state
 static colors_to_slave_t received_led_state = {0};
@@ -424,7 +448,7 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 }
 
 
-void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+void rpc_animation_slave_step_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     if (in_buflen == sizeof(colors_to_slave_t)) {
         const colors_to_slave_t* m2s = (const colors_to_slave_t*)in_data;
 
@@ -445,7 +469,7 @@ void user_sync_a_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
 
 
 extern uint8_t last_synced_layer;
-void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+void layer_refresh_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
     if (in_buflen == sizeof(layer_to_slave_t)) {
         const layer_to_slave_t* m2s = (const layer_to_slave_t*)in_data;
         layer_on_slave = m2s->layer_idx;
@@ -454,44 +478,12 @@ void user_sync_b_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t o
 }
 
 void keyboard_post_init_user(void) {
-    transaction_register_rpc(RPC_ANIMATION_STEP, user_sync_a_slave_handler);
-    transaction_register_rpc(SLAVE_LAYER_REFRESH, user_sync_b_slave_handler);
-    rgb_layers_init();
+    transaction_register_rpc(RPC_ANIMATION_STEP, rpc_animation_slave_step_handler);
+    transaction_register_rpc(SLAVE_LAYER_REFRESH, layer_refresh_slave_handler);
+    // rgb_layers_init();
 }
 
 void housekeeping_task_user(void) {
-    uint8_t current_layer = get_highest_layer(layer_state);
-    if (is_keyboard_master()) {
-        if (rgb_layers_task(0)) {
-            layer_to_slave_t m2s = {current_layer};
-            if (transaction_rpc_send(SLAVE_LAYER_REFRESH, sizeof(m2s), &m2s)) {
-                uprintf("triggered layer reload on slave, set to %d\n", current_layer);
-            }
-        }
-    }
-
-    if (is_keyboard_master()) {
-        static uint32_t last_sync = 0;
-        if (timer_elapsed32(last_sync) > BASE_ANIM_INTERVAL && current_layer == 0) {
-            colors_to_slave_t m2s = {0};
-
-            m2s.led_count = 8;
-            // Get current corner LED colors from master for all 8 LEDs
-            for (uint8_t i = 0; i < 8; i++) {
-                m2s.led_indices[i] = corner_leds[i];
-                // Use corner index (0-3) for both left and right
-                get_corner_led_hsv(i,
-                    &m2s.led_hsv[i][0],
-                    &m2s.led_hsv[i][1],
-                    &m2s.led_hsv[i][2]
-                );
-            }
-
-            if (transaction_rpc_send(RPC_ANIMATION_STEP, sizeof(m2s), &m2s)) {
-                last_sync = timer_read32();
-            } else {
-                uprintf("LED sync failed\n");
-            }
-        }
-    }
+    // Call animation housekeeping (e.g., timer-based animations like underglow)
+    update_leds_on_housekeeping(current_animation);
 }
