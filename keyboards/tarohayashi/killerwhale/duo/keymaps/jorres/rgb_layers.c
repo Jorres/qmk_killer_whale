@@ -10,15 +10,15 @@ const uint8_t corner_leds[] = {0, 1, 2, 27, 33, 34, 35, 60};
 // Track if RGB needs update (for slave sync)
 static uint8_t last_synced_layer = 255;
 
-// Color palette for base layer animation
-static const uint8_t base_anim_colors[][5] = {
+// Shared color palette for animations (underglow and key flash)
+const uint8_t underglow_color_palette[][3] = {
     {HSV_WHITE},
     {HSV_CYAN},
     {HSV_BLACK},
     {HSV_ORANGE},
     {HSV_BLACK}
 };
-#define BASE_ANIM_COLOR_COUNT 5
+#define UNDERGLOW_COLOR_PALETTE_SIZE 5
 // Current color index for each corner LED
 static uint8_t corner_led_colors[CORNER_LED_COUNT] = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -41,9 +41,9 @@ static uint8_t current_rgb_layer = 0;
 static void apply_base_layer_leds(void) {
     for (int i = 0; i < CORNER_LED_COUNT; i++) {
         uint8_t color_idx = corner_led_colors[i];
-        uint8_t h = base_anim_colors[color_idx][0];
-        uint8_t s = base_anim_colors[color_idx][1];
-        uint8_t v = base_anim_colors[color_idx][2];
+        uint8_t h = underglow_color_palette[color_idx][0];
+        uint8_t s = underglow_color_palette[color_idx][1];
+        uint8_t v = underglow_color_palette[color_idx][2];
         rgblight_sethsv_at(h, s, v, corner_leds[i]);
     }
 }
@@ -78,11 +78,11 @@ void rgb_layers_init(void) {
 // Change one random corner LED to a random color
 void animate_base_layer(void) {
     uint8_t corner_idx = rand() % CORNER_LED_COUNT;
-    uint8_t color_idx = rand() % BASE_ANIM_COLOR_COUNT;
+    uint8_t color_idx = rand() % UNDERGLOW_COLOR_PALETTE_SIZE;
     corner_led_colors[corner_idx] = color_idx;
-    uint8_t h = base_anim_colors[color_idx][0];
-    uint8_t s = base_anim_colors[color_idx][1];
-    uint8_t v = base_anim_colors[color_idx][2];
+    uint8_t h = underglow_color_palette[color_idx][0];
+    uint8_t s = underglow_color_palette[color_idx][1];
+    uint8_t v = underglow_color_palette[color_idx][2];
     rgblight_sethsv_at(h, s, v, corner_leds[corner_idx]);
 }
 
@@ -141,9 +141,9 @@ void get_corner_led_hsv(uint8_t corner_idx, uint8_t* h, uint8_t* s, uint8_t* v) 
     if (rgb_animation_active && current_layer == 0) {
         // BASE layer with animation - use animated colors
         uint8_t color_idx = corner_led_colors[corner_idx];
-        *h = base_anim_colors[color_idx][0];
-        *s = base_anim_colors[color_idx][1];
-        *v = base_anim_colors[color_idx][2];
+        *h = underglow_color_palette[color_idx][0];
+        *s = underglow_color_palette[color_idx][1];
+        *v = underglow_color_palette[color_idx][2];
     } else {
         // Static layer colors
         if (current_layer > 7) current_layer = 0;

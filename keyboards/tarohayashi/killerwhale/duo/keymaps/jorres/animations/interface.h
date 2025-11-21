@@ -22,5 +22,5 @@ typedef enum {
 
 // Interface functions called from keymap
 void update_leds_on_housekeeping(animation_mode_t mode);
-void update_leds_on_keypress(animation_mode_t mode);
+void update_leds_on_keypress(animation_mode_t mode, uint8_t row, uint8_t col);
 void clear_all_leds(void);  // Clear all LEDs on both halves

@@ -13,10 +13,10 @@ void update_leds_on_housekeeping(animation_mode_t mode) {
     }
 }
 
-void update_leds_on_keypress(animation_mode_t mode) {
+void update_leds_on_keypress(animation_mode_t mode, uint8_t row, uint8_t col) {
     switch (mode) {
         case ANIMATION_UNDERGLOW:
-            underglow_on_keypress();
+            underglow_on_keypress(row, col);
             break;
         case ANIMATION_SEQUENTIAL:
             sequential_on_keypress();

@@ -9,6 +9,10 @@
 // LED configuration
 #define CORNER_LED_COUNT 8
 
+// Shared color palette for animations
+#define UNDERGLOW_COLOR_PALETTE_SIZE 5
+extern const uint8_t underglow_color_palette[UNDERGLOW_COLOR_PALETTE_SIZE][3];
+
 // State variables (extern declarations)
 extern bool rgb_animation_active;
 extern uint16_t base_anim_timer;

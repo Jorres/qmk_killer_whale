@@ -292,20 +292,21 @@ static animation_mode_t current_animation = ANIMATION_UNDERGLOW;
 void matrix_scan_user(void) {
     custom_keycodes_matrix_scan();
 
-    // Only run RGB layer scanning for underglow animation
+    // Run RGB layer scanning for underglow animation
     if (current_animation == ANIMATION_UNDERGLOW) {
         rgb_layers_scan(0);
     }
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (!process_custom_keycodes(keycode, record)) {
-        return false;
-    }
+    // Debug purposes: show which physical key has been pressed
+    // uprintf("Key pressed - Row: %d, Col: %d\n", row, col);
 
-#ifdef LUNA_ENABLE
-    luna_process_record(keycode, record);
-#endif
+    // Trigger animation on any key press FIRST, before custom processing
+    // This ensures all physical keypresses are tracked, even if custom keycodes return false
+    if (record->event.pressed && keycode != ANIM_CYCLE) {
+        update_leds_on_keypress(current_animation, record->event.key.row, record->event.key.col);
+    }
 
     // Handle animation mode cycling
     if (keycode == ANIM_CYCLE && record->event.pressed) {
@@ -328,9 +329,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return false;  // Don't trigger animation update for this keycode
     }
 
-    // Trigger animation on any key press
-    if (record->event.pressed) {
-        update_leds_on_keypress(current_animation);
+#ifdef LUNA_ENABLE
+    luna_process_record(keycode, record);
+#endif
+
+    // Process custom keycodes
+    if (!process_custom_keycodes(keycode, record)) {
+        return false;
     }
 
     return true;
@@ -484,6 +489,6 @@ void keyboard_post_init_user(void) {
 }
 
 void housekeeping_task_user(void) {
-    // Call animation housekeeping (e.g., timer-based animations like underglow)
+    // Run animation housekeeping (includes key flash)
     update_leds_on_housekeeping(current_animation);
 }
