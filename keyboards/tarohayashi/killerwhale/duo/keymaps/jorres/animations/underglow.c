@@ -6,7 +6,7 @@
 // Key flash LED configuration
 #define KEY_FLASH_DURATION 500  // milliseconds
 #define MAX_FLASH_LEDS 10  // Track up to 10 simultaneous flashes
-#define KEY_FLASH_BRIGHTNESS 128  // Reduced brightness for key flashes (0-255)
+#define KEY_FLASH_BRIGHTNESS 115  // Reduced brightness for key flashes (0-255)
 
 // LED flash tracking
 typedef struct {

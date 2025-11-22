@@ -42,6 +42,7 @@ enum custom_keycodes {
 
     LBRC_RCTL,
     QUOT_RSFT,
+    SLSH_SLOW,
 
     HARPOON_1,
     HARPOON_2,

@@ -14,6 +14,10 @@ static uint16_t r_ctl_timer = 0;
 static bool r_ctl_alone = false;
 static bool registered_r_ctl = false;
 
+static uint16_t slsh_timer = 0;
+static bool slsh_alone = false;
+static bool registered_slsh = false;
+
 // Called from matrix_scan_user to handle timer-based key behaviors
 void custom_keycodes_matrix_scan(void) {
     if (i_esc_pressed && timer_elapsed(i_esc_timer) >= TAPPING_TERM) {
@@ -46,6 +50,16 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
         } else if (!registered_r_sft) {
             registered_r_sft = true;
             register_code(KC_RSFT);
+        }
+    }
+
+    if (keycode != SLSH_SLOW && slsh_alone) {
+        slsh_alone = false;
+        if (timer_elapsed(slsh_timer) < TAPPING_TERM) {
+            tap_code(KC_SLSH);
+        } else if (!registered_slsh) {
+            registered_slsh = true;
+            // No need to register anything, just for consistency
         }
     }
 
@@ -89,6 +103,24 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
             registered_r_sft = false;
             r_sft_timer = 0;
             r_sft_alone = false;
+        }
+        return false;
+    case SLSH_SLOW:
+        uprintf("SLSH_SLOW\n");
+        if (record->event.pressed) {
+            is_slow_mode(true);
+            slsh_timer = timer_read();
+            slsh_alone = true;
+        } else {
+            if (registered_slsh) {
+                // Nothing to unregister
+            } else if (slsh_alone && timer_elapsed(slsh_timer) < TAPPING_TERM) {
+                tap_code(KC_SLSH);
+            }
+            is_slow_mode(false);
+            registered_slsh = false;
+            slsh_timer = 0;
+            slsh_alone = false;
         }
         return false;
     case KB_BRIU:
