@@ -16,27 +16,54 @@ duo/keymaps/jorres/
 ├── keymap.c                    # Main keymap, layer definitions, core logic
 ├── custom_keycodes.h           # Custom keycode enum definitions
 ├── process_record.c/h          # Custom keycode implementations
-├── rgb_layers.c/h              # RGB layer system (corner LEDs, colors)
+├── rgb_layers.c/h              # RGB layer system (corner LEDs, shared color palette)
+├── led_map.c/h                 # Matrix position to LED index mapping
 ├── animations/
 │   ├── interface.h             # Shared types, animation mode enum, RPC definitions
 │   ├── common.c                # Animation dispatcher and LED utilities
-│   ├── underglow.c/h           # Timer-based corner LED animation
-│   └── sequential.c/h          # Key-press triggered sequential LED animation
+│   ├── underglow.c/h           # Corner LED animation + reactive key flash
+│   └── sequential.c/h          # Sequential LED stepping on key press
 └── rules.mk                    # Build configuration
 ```
+
+## LED Mapping System
+
+### Matrix-to-LED Mapping (`led_map.c/h`)
+Defines which LED corresponds to each physical key position:
+- `matrix_to_led[row][col]` returns LED index (0-65) or 255 if no LED
+- **Independent of layers** - maps physical switches to LEDs
+- Used by reactive key flash feature
+
+Example usage:
+```c
+#include "led_map.h"
+uint8_t led_index = pgm_read_byte(&matrix_to_led[row][col]);
+```
+
+## Color Palette System
+
+### Shared Color Palette (`rgb_layers.c/h`)
+```c
+const uint8_t underglow_color_palette[][3] = {
+    {HSV_WHITE}, {HSV_CYAN}, {HSV_BLACK}, {HSV_ORANGE}, {HSV_BLACK}
+};
+```
+- Shared between underglow animation and key flash
+- Black entries (V=0) used by underglow for animation pauses
+- Key flash skips black entries automatically
 
 ## Animation System Architecture
 
 ### Core Concept
 The animation system uses a **dispatcher pattern** with mode-based routing. All animations implement two callbacks:
 - `*_on_housekeeping()` - Called every housekeeping cycle (~1ms)
-- `*_on_keypress()` - Called when any key is pressed
+- `*_on_keypress(row, col)` - Called when any key is pressed
 
 ### Animation Modes
 Defined in `animations/interface.h`:
 ```c
 typedef enum {
-    ANIMATION_UNDERGLOW,    // Default: Corner LED animation
+    ANIMATION_UNDERGLOW,    // Default: Corner LED animation + reactive key flash
     ANIMATION_SEQUENTIAL    // Sequential LED stepping
 } animation_mode_t;
 ```
@@ -46,17 +73,22 @@ typedef enum {
 **`animations/interface.h`**
 - RPC transaction types (`colors_to_slave_t`, `layer_to_slave_t`)
 - Animation mode enum
-- Function declarations
+- Interface function declarations
 
 **`animations/common.c`**
-- `update_leds_on_housekeeping(mode)` - Routes to appropriate animation
-- `update_leds_on_keypress(mode)` - Routes to appropriate animation
-- `clear_all_leds()` - Clears all 66 LEDs on both halves (handles master/slave correctly)
+- `update_leds_on_housekeeping(mode)` - Routes to animation housekeeping
+- `update_leds_on_keypress(mode, row, col)` - Routes keypress with position
+- `clear_all_leds()` - Clears all 66 LEDs on both halves
 
 **`animations/underglow.c`**
-- Timer-based animation updating 8 corner LEDs
-- Syncs layer state to slave via `SLAVE_LAYER_REFRESH` RPC
-- Only runs on housekeeping, no-op on key press
+- **Corner LED animation**: Timer-based animation of 8 corner LEDs
+- **Reactive key flash**: Lights up pressed keys for 500ms
+  - Random color from shared palette (excluding black)
+  - Reduced brightness (115/255)
+  - Tracks up to 10 simultaneous flashes
+- Layer state sync to slave via `SLAVE_LAYER_REFRESH` RPC
+- Uses shared `underglow_color_palette` from `rgb_layers.h`
+- Uses `led_map` for key-to-LED mapping
 
 **`animations/sequential.c`**
 - Key-press triggered sequential LED stepping (0→65)
@@ -65,7 +97,7 @@ typedef enum {
 
 ### RPC Communication
 Split keyboard halves communicate via RPC transactions:
-- `RPC_ANIMATION_STEP` - Send LED color data to slave
+- `RPC_ANIMATION_STEP` - Send LED color data to slave (reused for multiple purposes)
 - `SLAVE_LAYER_REFRESH` - Notify slave of layer changes
 
 Transaction IDs defined in `duo/config.h`:
@@ -73,42 +105,55 @@ Transaction IDs defined in `duo/config.h`:
 #define SPLIT_TRANSACTION_IDS_USER RPC_ANIMATION_STEP, SLAVE_LAYER_REFRESH
 ```
 
+**Important**: Multiple systems can use the same RPC transaction ID with separate invocations. The underglow system sends separate RPC calls for corner animation and key flash, both using `RPC_ANIMATION_STEP`.
+
 ## Master/Slave LED Mapping
 
 **Critical**: LED indices are fixed (0-32 left, 33-65 right), but which half is master depends on USB cable position.
 
 ```c
-// Determine if LED is on master side
-if (is_keyboard_left()) {
-    // Master is left: LEDs 0-32 are master, 33-65 are slave
-} else {
-    // Master is right: LEDs 33-65 are master, 0-32 are slave
+// Helper to determine if LED is on master side
+static bool is_led_on_master(uint8_t led_index) {
+    if (is_keyboard_left()) {
+        return led_index <= 32;  // Left master: LEDs 0-32
+    } else {
+        return led_index >= 33;  // Right master: LEDs 33-65
+    }
 }
 ```
 
-Master LEDs: Set directly via `rgblight_sethsv_at(h, s, v, index)`
-Slave LEDs: Send via `transaction_rpc_send(RPC_ANIMATION_STEP, ...)`
+**Master LEDs**: Set directly via `rgblight_sethsv_at(h, s, v, index)`
+**Slave LEDs**: Send via `transaction_rpc_send(RPC_ANIMATION_STEP, ...)`
 
 ## Key Integration Points
 
 ### `keymap.c`
 
-**Animation mode tracking**:
+**Critical ordering in `process_record_user()`**:
 ```c
-static animation_mode_t current_animation = ANIMATION_UNDERGLOW;
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    // 1. Trigger animations FIRST (before custom keycodes)
+    //    This ensures all physical keypresses trigger animations,
+    //    even if custom keycodes return false
+    if (record->event.pressed && keycode != ANIM_CYCLE) {
+        update_leds_on_keypress(current_animation, record->event.key.row, record->event.key.col);
+    }
+
+    // 2. Handle ANIM_CYCLE mode switching
+    // 3. Process custom keycodes
+    // 4. Process Luna/OLED updates
+}
 ```
 
-**`matrix_scan_user()`**:
-- Conditionally runs `rgb_layers_scan(0)` only for underglow mode
-- Prevents interference with other animations
+**Why this order matters**: Custom keycodes (like PRTSCR) return `false`, which would exit early and prevent animations from running. By calling animations first, all keypresses are captured.
 
-**`process_record_user()`**:
-- Handles `ANIM_CYCLE` keycode to switch modes
-- Calls `clear_all_leds()` before switching
-- Routes key presses to `update_leds_on_keypress(current_animation)`
+**`matrix_scan_user()`**:
+- Runs `rgb_layers_scan(0)` for underglow mode
+- This drives the corner LED timer-based animation
 
 **`housekeeping_task_user()`**:
-- Routes housekeeping to `update_leds_on_housekeeping(current_animation)`
+- Routes to `update_leds_on_housekeeping(current_animation)`
+- Underglow uses this for key flash timeouts and corner LED animation sync
 
 ## Adding a New Animation
 
@@ -116,7 +161,7 @@ static animation_mode_t current_animation = ANIMATION_UNDERGLOW;
 2. **Implement callbacks**:
    ```c
    void newmode_on_housekeeping(void) { /* your logic */ }
-   void newmode_on_keypress(void) { /* your logic */ }
+   void newmode_on_keypress(uint8_t row, uint8_t col) { /* your logic */ }
    ```
 3. **Add to enum** in `interface.h`:
    ```c
@@ -129,21 +174,21 @@ static animation_mode_t current_animation = ANIMATION_UNDERGLOW;
 4. **Add to dispatcher** in `common.c`:
    ```c
    case ANIMATION_NEWMODE:
-       newmode_on_housekeeping(); // or _on_keypress()
+       newmode_on_housekeeping(); // or _on_keypress(row, col)
        break;
    ```
-5. **Update `rules.mk`**: Add `animations/newmode.c` to `SRC +=`
+5. **Update `rules.mk`**: Add `animations/newmode.c` to `SRC +=` (or rely on wildcard)
 6. **Update cycling logic** in `keymap.c`: Change `% 2` to `% 3` (or number of modes)
 
 ## Common Pitfalls
 
 1. **LED indices**: Always use helpers to check master/slave, don't hardcode `< 33`
 2. **RPC batching**: `colors_to_slave_t` holds max 8 LEDs, batch accordingly
-3. **Animation interference**: Ensure `rgb_layers_scan()` only runs when needed
+3. **Keypress ordering**: Animation calls must happen BEFORE custom keycode processing
 4. **Clearing LEDs**: Use `clear_all_leds()` when switching modes to prevent remnants
+5. **Color palette**: Use shared `underglow_color_palette` from `rgb_layers.h`, don't duplicate
 
 ## Building
 ```bash
 qmk compile -kb tarohayashi/killerwhale/duo -km jorres
 ```
-

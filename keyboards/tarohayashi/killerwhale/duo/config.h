@@ -30,8 +30,8 @@
 
 // CPI = 600 + spd * 300 / AMP = 16.0 + (double)spd * 3.0
 #define SPD_OPTION_MAX    7 // 固定: 最大値
-#define SPD_DEFAULT_LEFT  4
-#define SPD_DEFAULT_RIGHT 4
+#define SPD_DEFAULT_LEFT  6
+#define SPD_DEFAULT_RIGHT 6
 
 // 角度 = angle * 12
 #define ANGLE_OPTION_MAX    29 // 固定: 最大値
