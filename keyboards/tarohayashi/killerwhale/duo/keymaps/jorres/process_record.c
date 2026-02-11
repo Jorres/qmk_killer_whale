@@ -1,6 +1,11 @@
 #include "process_record.h"
 #include "lib/add_keycodes.h"
 #include "lib/common_killerwhale.h"
+#include "lang_keys.h"
+
+bool symbol_gate_active = true;
+
+extern uint8_t current_os_layout;
 
 // Timer state variables
 static uint16_t i_esc_timer = 0;
@@ -36,7 +41,9 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
     if (keycode != LBRC_RCTL && r_ctl_alone) {
         r_ctl_alone = false;
         if (timer_elapsed(r_ctl_timer) < TAPPING_TERM) {
-            tap_code(KC_LBRC);
+            if (!(symbol_gate_active && current_os_layout == 0 && get_highest_layer(layer_state) == 0)) {
+                tap_code(KC_LBRC);
+            }
         } else if (!registered_r_ctl) {
             registered_r_ctl = true;
             register_code(KC_RCTL);
@@ -46,7 +53,9 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
     if (keycode != QUOT_RSFT && r_sft_alone) {
         r_sft_alone = false;
         if (timer_elapsed(r_sft_timer) < QUOT_RSFT_TAPPING_TERM) {
-            tap_code(KC_QUOT);
+            if (!(symbol_gate_active && current_os_layout == 0 && get_highest_layer(layer_state) == 0)) {
+                tap_code(KC_QUOT);
+            }
         } else if (!registered_r_sft) {
             registered_r_sft = true;
             register_code(KC_RSFT);
@@ -64,6 +73,12 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+    case SYM_GATE:
+        if (record->event.pressed) {
+            symbol_gate_active = !symbol_gate_active;
+            uprintf("SYM_GATE: %s\n", symbol_gate_active ? "ON" : "OFF");
+        }
+        return false;
     case CTLSHFT:
         if (record->event.pressed) {
             register_mods(MOD_BIT(KC_LCTL) | MOD_BIT(KC_LSFT));
@@ -80,7 +95,9 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
             if (registered_r_ctl) {
                 unregister_code(KC_RCTL);
             } else if (r_ctl_alone && timer_elapsed(r_ctl_timer) < TAPPING_TERM) {
-                tap_code(KC_LBRC);
+                if (!(symbol_gate_active && current_os_layout == 0 && get_highest_layer(layer_state) == 0)) {
+                    tap_code(KC_LBRC);
+                }
             }
             registered_r_ctl = false;
             r_ctl_timer = 0;
@@ -97,7 +114,9 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
             if (registered_r_sft) {
                 unregister_code(KC_RSFT);
             } else if (r_sft_alone && timer_elapsed(r_sft_timer) < TAPPING_TERM) {
-                tap_code(KC_QUOT);
+                if (!(symbol_gate_active && current_os_layout == 0 && get_highest_layer(layer_state) == 0)) {
+                    tap_code(KC_QUOT);
+                }
             }
             unset_scroll_mode();
             registered_r_sft = false;
@@ -437,6 +456,11 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_LALT);
             unregister_code(KC_D);
         }
+        return false;
+    }
+
+    // Delegate language-aware keys to lang_keys.c
+    if (process_lang_key(keycode, record)) {
         return false;
     }
 

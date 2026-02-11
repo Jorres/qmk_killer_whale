@@ -8,3 +8,6 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record);
 
 // Timer scan functions to be called from matrix_scan_user
 void custom_keycodes_matrix_scan(void);
+
+// Symbol gate: when active, symbol keys on BASE are silently blocked
+extern bool symbol_gate_active;

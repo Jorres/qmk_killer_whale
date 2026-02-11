@@ -11,6 +11,11 @@
 #include "process_record.h"
 #include "rgb_layers.h"
 #include "animations/interface.h"
+#include "raw_hid.h"
+
+// OS layout state received via Raw HID from host daemon
+// 0 = US English (default), 1 = Russian
+uint8_t current_os_layout = 0;
 
 #ifdef LUNA_ENABLE
 #include "luna.h"
@@ -48,18 +53,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,                    _______,
 
         // 右手
-        PRTSCR,  HARPOON_1, HARPOON_2,  KC_0,    KC_F11,  KC_DELETE,
+        PRTSCR,  HARPOON_1, HARPOON_2,  KC_0,    KC_F11,  HARPOON_2,
         KC_Y,    KC_U,      I_ESC,      KC_O,    KC_P,    LBRC_RCTL,
         KC_H,    KC_J,      KC_K,       KC_L,    KC_SCLN, QUOT_RSFT,
         KC_N,    KC_M,      KC_COMM,    KC_DOT,  SLSH_SLOW,
                                                  MO(NAVIGATION),
         LT(SYMBOLS, KC_BSPC), LANG,
-        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______,
+        KC_UP, KC_DOWN, KC_LEFT, KC_RIGHT,   _______, // this is trackball
         _______, _______,                     _______
     ),
     [NAVIGATION] = LAYOUT(
         // 左手
-        RGB_TOG, _______, KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
+        RGB_TOG, SYM_GATE, KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
         _______, TMUX_1,  TMUX_2,  TMUX_3,  TMUX_4,  TMUX_5,
         _______, _______, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XX1,
                  _______, _______, _______, _______, TM_SESS,
@@ -80,10 +85,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [SYMBOLS] = LAYOUT(
         // 左手
+        // Layer-level switch to US on entry ensures all keycodes produce US symbols
         UC(64), _______, _______,  _______, _______, _______,
-        _______, KC_ASTR, KC_EQUAL, KC_BSLS, KC_PIPE, _______,
+        _______, KC_ASTR, KC_EQUAL, KC_BSLS, KC_PIPE, KC_SCLN,
         _______, KC_CIRC, KC_GRV,   KC_DLR,  KC_AT,   KC_EXLM,
-                 _______, KC_MINS,  KC_LABK, KC_RABK, _______,
+                 _______, KC_MINS,  KC_LABK, KC_RABK, S(KC_SLSH), // excl-mark
                           _______,
         _______, _______,
         _______, _______, _______,  _______,          _______,
@@ -92,9 +98,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
         // 右手
         _______, _______, _______, _______, _______, _______,
-        _______, KC_LCBR, KC_RCBR, KC_PLUS, _______, _______,
-        KC_TILD, KC_LPRN, KC_RPRN, KC_HASH, KC_AMPR, _______,
-        KC_PERC, KC_LBRC, KC_RBRC, KC_UNDS, _______,
+        _______, KC_LCBR, KC_RCBR, KC_PLUS, KC_AMPR, S(KC_QUOT), // double quote
+        KC_TILD, KC_LPRN, KC_RPRN, KC_HASH, S(KC_SCLN), KC_QUOT, // colon
+        KC_PERC, KC_LBRC, KC_RBRC, KC_UNDS, KC_SLSH,
                                    _______,
         _______, _______,
         _______, _______, _______, _______,          _______,
@@ -264,9 +270,9 @@ const uint16_t PROGMEM lalt[] = {KC_X, KC_D, COMBO_END};
 const uint16_t PROGMEM lkm[] = {KC_J, KC_K, KC_L, COMBO_END};
 const uint16_t PROGMEM pkm[] = {KC_M, KC_COMM, KC_DOT, COMBO_END};
 
-const uint16_t PROGMEM tmux_copy[] = {KC_U, KC_DELETE, COMBO_END};
-const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_DELETE, COMBO_END};
-const uint16_t PROGMEM tmux_search[] = {KC_M, KC_DELETE, COMBO_END};
+const uint16_t PROGMEM tmux_copy[] = {KC_U, HARPOON_2, COMBO_END};
+const uint16_t PROGMEM tmux_highlight[] = {KC_J, HARPOON_2, COMBO_END};
+const uint16_t PROGMEM tmux_search[] = {KC_M, HARPOON_2, COMBO_END};
 
 const uint16_t PROGMEM bootloader[] = {KC_Q, KC_W, KC_A, KC_S,  COMBO_END};
 const uint16_t PROGMEM bootloader_right[] = {KC_O, KC_L, KC_P, KC_F11,  COMBO_END};
@@ -330,6 +336,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef LUNA_ENABLE
     luna_process_record(keycode, record);
 #endif
+
+    // Symbol gate: block symbol keys on BASE layer (only in US layout;
+    // in Russian these keys produce letters like ж, б, ю)
+    if (symbol_gate_active && current_os_layout == 0 && get_highest_layer(layer_state) == BASE) {
+        switch (keycode) {
+        case KC_1:
+        case KC_SCLN:
+            return false;
+        }
+    }
 
     // Process custom keycodes
     if (!process_custom_keycodes(keycode, record)) {
@@ -477,6 +493,14 @@ void layer_refresh_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t
         const layer_to_slave_t* m2s = (const layer_to_slave_t*)in_data;
         layer_on_slave = m2s->layer_idx;
         apply_static_layer_colors(layer_on_slave);
+    }
+}
+
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+    if (length < 2) return;
+    if (data[0] == 0x01) {  // Layout update command
+        current_os_layout = data[1];
+        uprintf("HID layout update: %d\n", current_os_layout);
     }
 }
 

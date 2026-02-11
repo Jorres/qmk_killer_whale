@@ -50,4 +50,25 @@ enum custom_keycodes {
     CTLSHFT,
 
     ANIM_CYCLE,  // Cycle through animation modes
+    SYM_GATE,    // Toggle: block symbol keys on BASE layer (training mode)
+
+    // Language-aware keys: contiguous range, processed by lang_keys.c
+    // Keys that produce the correct symbol regardless of OS layout (US/RU).
+    LANG_KEY_START,
+    QUES_LANG = LANG_KEY_START, // ?
+    PIPE_LANG,  // |
+    CIRC_LANG,  // ^
+    GRV_LANG,   // `
+    DLR_LANG,   // $
+    AT_LANG,    // @
+    LABK_LANG,  // <
+    RABK_LANG,  // >
+    LCBR_LANG,  // {
+    RCBR_LANG,  // }
+    TILD_LANG,  // ~
+    HASH_LANG,  // #
+    AMPR_LANG,  // &
+    LBRC_LANG,  // [
+    RBRC_LANG,  // ]
+    LANG_KEY_END = RBRC_LANG,
 };

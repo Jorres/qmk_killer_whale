@@ -1,4 +1,5 @@
 ENCODER_MAP_ENABLE = no
+RAW_ENABLE = yes
 
 KEY_OVERRIDE_ENABLE = yes # for overriding ctrl + h to backspace
 

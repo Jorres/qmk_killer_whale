@@ -16,6 +16,7 @@ duo/keymaps/jorres/
 ├── keymap.c                    # Main keymap, layer definitions, core logic
 ├── custom_keycodes.h           # Custom keycode enum definitions
 ├── process_record.c/h          # Custom keycode implementations
+├── lang_keys.c/h               # Language-aware keys (table-driven, see below)
 ├── rgb_layers.c/h              # RGB layer system (corner LEDs, shared color palette)
 ├── led_map.c/h                 # Matrix position to LED index mapping
 ├── animations/
@@ -23,6 +24,9 @@ duo/keymaps/jorres/
 │   ├── common.c                # Animation dispatcher and LED utilities
 │   ├── underglow.c/h           # Corner LED animation + reactive key flash
 │   └── sequential.c/h          # Sequential LED stepping on key press
+├── host/                       # Host-side Go daemon for Raw HID layout sync
+│   ├── main.go
+│   └── go.mod
 └── rules.mk                    # Build configuration
 ```
 
@@ -179,6 +183,38 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
    ```
 5. **Update `rules.mk`**: Add `animations/newmode.c` to `SRC +=` (or rely on wildcard)
 6. **Update cycling logic** in `keymap.c`: Change `% 2` to `% 3` (or number of modes)
+
+## Language-Aware Keys (`lang_keys.c/h`)
+
+Keys that produce the correct character regardless of the active OS keyboard layout (US vs Russian). A host-side daemon pushes layout changes to the keyboard via Raw HID.
+
+### Architecture
+```
+GNOME layout change → Go daemon (host/main.go) → Raw HID → keymap.c raw_hid_receive() → current_os_layout global
+```
+
+### How it works
+- `current_os_layout` (in `keymap.c`) is set by the host daemon: 0=US, 1=RU
+- `lang_keys.c` uses a **table-driven** approach — each key maps to a `{us_keycode, ru_keycode}` pair
+- `process_record.c` delegates to `process_lang_key()` for keycodes in `[LANG_KEY_START, LANG_KEY_END]`
+
+### Adding a new language-aware key
+1. Add the keycode to `custom_keycodes.h` between `LANG_KEY_START` and `LANG_KEY_END`, update `LANG_KEY_END`:
+   ```c
+   LANG_KEY_START,
+   QUES_LANG = LANG_KEY_START,
+   NEWKEY_LANG,
+   LANG_KEY_END = NEWKEY_LANG,
+   ```
+2. Add the mapping in `lang_keys.c`:
+   ```c
+   [NEWKEY_LANG - LANG_KEY_START] = { S(KC_X), KC_Y },
+   ```
+3. Place the keycode in the desired layer in `keymap.c`
+
+### Raw HID Protocol
+- Packet: 32 bytes, byte[0] = command, byte[1] = payload
+- Command `0x01`: layout update, byte[1] = layout index (0=US, 1=RU)
 
 ## Common Pitfalls
 
