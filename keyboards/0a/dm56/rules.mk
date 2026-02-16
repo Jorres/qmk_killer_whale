@@ -1,0 +1,4 @@
+SERIAL_DRIVER = vendor
+EXTRAKEY_ENABLE = yes
+NKRO_ENABLE = yes
+COMBO_ENABLE = yes

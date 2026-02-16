@@ -1,0 +1,21 @@
+#pragma once
+
+// MASTER_LEFT or MASTER_RIGHT passed via build flag:
+//   qmk flash -kb 0a/dm56 -km jorres -e OPT_DEFS="-DMASTER_LEFT"
+//   qmk flash -kb 0a/dm56 -km jorres -e OPT_DEFS="-DMASTER_RIGHT"
+
+#define SERIAL_USART_FULL_DUPLEX
+#define SERIAL_USART_TX_PIN GP0
+#define SERIAL_USART_RX_PIN GP1
+
+#define DEBOUNCE 5
+
+#define TAPPING_TERM 150
+#define TAPPING_TERM_PER_KEY
+#define COMBO_TERM 50
+
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 500U
+
+#define UNICODE_SELECTED_MODES UNICODE_MODE_LINUX
+#define UNICODE_TYPE_DELAY 0

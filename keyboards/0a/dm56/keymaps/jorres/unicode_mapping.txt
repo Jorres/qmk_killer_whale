@@ -1,0 +1,42 @@
+Unicode symbol mapping for SYMBOLS layer
+=========================================
+
+Symbols using Unicode (differ between US and Russian layouts):
+
+Original      Unicode        Char
+--------      -------        ----
+KC_BSLS       UC(0x005C)     \
+KC_PIPE       UC(0x007C)     |
+KC_AMPR       UC(0x0026)     &
+(new)         UC(0x003F)     ?
+KC_LCBR       UC(0x007B)     {
+KC_RCBR       UC(0x007D)     }
+(new)         UC(0x003A)     :
+KC_CIRC       UC(0x005E)     ^
+KC_GRV        UC(0x0060)     `
+KC_DLR        UC(0x0024)     $
+KC_AT         UC(0x0040)     @
+KC_TILD       UC(0x007E)     ~
+KC_HASH       UC(0x0023)     #
+(new)         UC(0x003B)     ;
+(new)         UC(0x0027)     '
+KC_LABK       UC(0x003C)     <
+KC_RABK       UC(0x003E)     >
+(new)         UC(0x0022)     "
+KC_LBRC       UC(0x005B)     [
+KC_RBRC       UC(0x005D)     ]
+(new)         UC(0x002F)     /
+
+Symbols using native keycodes (same in US and Russian layouts):
+
+Keycode       Char
+-------       ----
+KC_ASTR       *
+KC_EQUAL      =
+KC_PLUS       +
+KC_EXLM       !
+KC_LPRN       (
+KC_RPRN       )
+KC_MINS       -
+KC_PERC       %
+KC_UNDS       _
