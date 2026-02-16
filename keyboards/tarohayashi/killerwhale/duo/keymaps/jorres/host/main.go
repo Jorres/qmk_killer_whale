@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,9 +25,20 @@ const (
 	reconnectInterval = 500 * time.Millisecond
 )
 
-// parseLayout checks if a gsettings mru-sources line indicates Russian layout.
-// Returns 1 for Russian, 0 for everything else.
-func parseLayout(line string) uint8 {
+func isX11() bool {
+	return os.Getenv("XDG_SESSION_TYPE") == "x11"
+}
+
+// parseLayoutName maps a layout name (e.g. "ru", "us") to our internal index.
+func parseLayoutName(name string) uint8 {
+	if strings.TrimSpace(name) == "ru" {
+		return 1
+	}
+	return 0
+}
+
+// parseGsettingsLayout checks if a gsettings mru-sources line indicates Russian layout.
+func parseGsettingsLayout(line string) uint8 {
 	if idx := strings.Index(line, "["); idx >= 0 {
 		after := line[idx:]
 		if strings.HasPrefix(after, "[('xkb', 'ru')") {
@@ -35,12 +48,26 @@ func parseLayout(line string) uint8 {
 	return 0
 }
 
+// xkbMonitorPath returns the path to the xkb_monitor binary next to this executable.
+func xkbMonitorPath() string {
+	exe, err := os.Executable()
+	if err != nil {
+		return "xkb_monitor"
+	}
+	return filepath.Join(filepath.Dir(exe), "xkb_monitor")
+}
+
 func getCurrentLayout() (uint8, error) {
+	if isX11() {
+		// On X11, xkb_monitor sends the initial layout as its first line.
+		// We'll pick it up through the event channel, so just return 0 here.
+		return 0, nil
+	}
 	out, err := exec.Command("gsettings", "get", "org.gnome.desktop.input-sources", "mru-sources").Output()
 	if err != nil {
 		return 0, fmt.Errorf("gsettings: %w", err)
 	}
-	return parseLayout(string(out)), nil
+	return parseGsettingsLayout(string(out)), nil
 }
 
 func openDevice() (*hid.Device, error) {
@@ -84,27 +111,47 @@ func waitForDevice() *hid.Device {
 	}
 }
 
-// layoutEvents starts gsettings monitor and sends parsed layout values on the channel.
+// layoutEvents monitors layout changes and sends parsed layout values on the channel.
+// On Wayland, uses gsettings monitor. On X11, uses xkb_monitor helper.
 // Blocks forever; meant to run in a goroutine.
 func layoutEvents(ch chan<- uint8) {
-	cmd := exec.Command("gsettings", "monitor", "org.gnome.desktop.input-sources", "mru-sources")
+	var cmd *exec.Cmd
+	var parser func(string) uint8
+	var backend string
+
+	if isX11() {
+		backend = "xkb_monitor"
+		cmd = exec.Command(xkbMonitorPath())
+		parser = parseLayoutName
+	} else {
+		backend = "gsettings monitor"
+		cmd = exec.Command("gsettings", "monitor", "org.gnome.desktop.input-sources", "mru-sources")
+		parser = parseGsettingsLayout
+	}
+
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatalf("Failed to create pipe: %v", err)
 	}
 	if err := cmd.Start(); err != nil {
-		log.Fatalf("Failed to start gsettings monitor: %v", err)
+		log.Fatalf("Failed to start %s: %v", backend, err)
 	}
 
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		ch <- parseLayout(scanner.Text())
+		ch <- parser(scanner.Text())
 	}
-	log.Fatal("gsettings monitor exited unexpectedly")
+	log.Fatalf("%s exited unexpectedly", backend)
 }
 
 func main() {
 	log.Println("lang_sync: starting")
+
+	if isX11() {
+		log.Println("lang_sync: X11 session detected, using xkb_monitor")
+	} else {
+		log.Println("lang_sync: Wayland session detected, using gsettings monitor")
+	}
 
 	if err := hid.Init(); err != nil {
 		log.Fatalf("hid init: %v", err)

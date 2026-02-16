@@ -115,11 +115,8 @@ compile_commands.json
 
 # VIA(L) files that don't belong in QMK repo
 via*.json
-<<<<<<< HEAD
 keyboards/tarohayashi/.vscode/settings.json
-=======
 /keyboards/**/keymaps/vial/*
->>>>>>> 81a3aa025cda52732e847af8db256cb132605ce0
 keyboards/tarohayashi/killerwhale/solo/keymaps/novia_left/add_joystick.c
 keyboards/tarohayashi/killerwhale/solo/keymaps/novia_left/add_joystick.h
 keyboards/tarohayashi/killerwhale/solo/keymaps/novia_left/add_keycodes.c
@@ -139,5 +136,6 @@ keyboards/tarohayashi/killerwhale/duo/.vscode/settings.json
 keyboards/tarohayashi/cannonball/.vscode/settings.json
 keyboards/tarohayashi/killerwhale/solo/.vscode/settings.json
 keyboards/tarohayashi/.vscode/settings.json
-keyboards/tarohayashi/.vscode/settings.json
-keyboards/tarohayashi/.vscode/settings.json
+
+keyboards/tarohayashi/killerwhale/duo/keymaps/jorres/host/lang_sync
+keyboards/tarohayashi/killerwhale/duo/keymaps/jorres/host/xkb_monitor

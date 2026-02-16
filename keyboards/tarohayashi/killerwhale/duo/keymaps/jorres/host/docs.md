@@ -1,7 +1,32 @@
-# Build the binary
+# Build
 
 cd ~/hobbies/qmk_killer_whale/keyboards/tarohayashi/killerwhale/duo/keymaps/jorres/host
-go build -o lang_sync .
+make
+
+This builds two binaries:
+- `lang_sync` — Go daemon that sends layout changes to the keyboard via Raw HID
+- `xkb_monitor` — small C helper that monitors X11 XKB layout group changes
+
+## Build dependencies
+
+**Go daemon** (`lang_sync`): just Go.
+
+**X11 monitor** (`xkb_monitor`): needs gcc and X11 dev headers:
+
+    sudo apt install libx11-dev libxkbfile-dev
+
+Only needed when running on X11. On Wayland, `xkb_monitor` is not used (the daemon
+falls back to `gsettings monitor`).
+
+## How it works
+
+The daemon detects `$XDG_SESSION_TYPE` at startup:
+- **Wayland**: monitors `gsettings org.gnome.desktop.input-sources mru-sources`
+- **X11**: spawns the `xkb_monitor` helper (must be in the same directory as `lang_sync`)
+
+`xkb_monitor` listens for XKB StateNotify events and prints the layout name
+(e.g. "us", "ru") to stdout on each switch. The Go daemon reads these lines and
+sends the corresponding layout index to the keyboard over Raw HID.
 
 # Symlink the service file (so edits in the repo take effect)
 
