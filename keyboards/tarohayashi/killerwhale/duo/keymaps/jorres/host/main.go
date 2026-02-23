@@ -26,7 +26,15 @@ const (
 )
 
 func isX11() bool {
-	return os.Getenv("XDG_SESSION_TYPE") == "x11"
+	if st := os.Getenv("XDG_SESSION_TYPE"); st != "" {
+		return st == "x11"
+	}
+	// Env var missing (common in systemd user services) — ask loginctl.
+	out, err := exec.Command("loginctl", "show-session", "auto", "-p", "Type", "--value").Output()
+	if err == nil {
+		return strings.TrimSpace(string(out)) == "x11"
+	}
+	return false
 }
 
 // parseLayoutName maps a layout name (e.g. "ru", "us") to our internal index.
