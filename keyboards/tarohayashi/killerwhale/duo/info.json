@@ -62,7 +62,7 @@
         "led_count": 66,
         "split": true,
         "split_count": [33, 33],
-        "max_brightness": 255,
+        "max_brightness": 55,
         "hue_steps": 4,
         "saturation_steps": 4,
         "brightness_steps": 4,

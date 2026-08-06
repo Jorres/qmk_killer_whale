@@ -15,6 +15,8 @@
 
 // OS layout state received via Raw HID from host daemon
 // 0 = US English (default), 1 = Russian
+// NOTE: stays at 0 on machines without the host agent running — any logic
+// gated on this will behave as if the OS layout is always US.
 uint8_t current_os_layout = 0;
 
 #ifdef LUNA_ENABLE
@@ -42,7 +44,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT(
         // 左手
          // KC_TAB,  KC_Q,      KC_1,    KC_2, KC_3, KC_4,
-        KC_TAB,  KC_Q,      KC_1,    MO(NUMBERS), TO(HOGWARTS), KC_J,
+        KC_TAB,  KC_Q,      KC_1,    MO(NUMBERS), TO(HOGWARTS), KC_F8,
         KC_LCTL, KC_A,      KC_W,       KC_E, KC_R, KC_T,
         KC_LSFT, KC_Z,      KC_S,       KC_D, KC_F, KC_G,
         KC_X,   KC_X, KC_C, KC_V, KC_B,    // <--- first button does not work on hardware level, probably soldering error or TRRS short circuiting
@@ -53,7 +55,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______,                    _______,
 
         // 右手
-        PRTSCR,  HARPOON_1, HARPOON_2,  KC_0,    KC_F11,  HARPOON_2,
+        PRTSCR,  HARPOON_1, HARPOON_2,  KC_0,    KC_F8,  KC_F7,
         KC_Y,    KC_U,      I_ESC,      KC_O,    KC_P,    LBRC_RCTL,
         KC_H,    KC_J,      KC_K,       KC_L,    KC_SCLN, QUOT_RSFT,
         KC_N,    KC_M,      KC_COMM,    KC_DOT,  SLSH_SLOW,
@@ -66,8 +68,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         // 左手
         RGB_TOG, SYM_GATE, KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
         _______, TMUX_1,  TMUX_2,  TMUX_3,  TMUX_4,  TMUX_5,
-        _______, _______, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XX1,
-                 _______, _______, _______, _______, TM_SESS,
+        _______, TUMBLER_Z, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XX1,
+                 _______, _______, _______, TUMBLER_X, TUMBLER_Y,
                           KC_TRNS,
         BRO_LEF, _______,
         _______, _______, _______, _______,          _______,
@@ -77,7 +79,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______, _______, _______,
         TMUX_6,  TMUX_7,  TMUX_8,  TMUX_9,  TMUX_10, _______,
         NAV_XX2, NAV_XX3, KC_WBAK, KC_WREF, KC_WFWD, _______,
-        _______, TM_NWIN, _______, _______, _______,
+        KC_F7,   RCS(KC_F11), _______, _______, _______,
                                    KC_TRNS,
         BRO_ADL, BRO_RIG,
         _______, _______, _______, _______,          _______,
@@ -270,26 +272,46 @@ const uint16_t PROGMEM lalt[] = {KC_X, KC_D, COMBO_END};
 const uint16_t PROGMEM lkm[] = {KC_J, KC_K, KC_L, COMBO_END};
 const uint16_t PROGMEM pkm[] = {KC_M, KC_COMM, KC_DOT, COMBO_END};
 
-const uint16_t PROGMEM tmux_copy[] = {KC_U, HARPOON_2, COMBO_END};
-const uint16_t PROGMEM tmux_highlight[] = {KC_J, HARPOON_2, COMBO_END};
-const uint16_t PROGMEM tmux_search[] = {KC_M, HARPOON_2, COMBO_END};
+const uint16_t PROGMEM tmux_copy[] = {KC_U, KC_F7, COMBO_END};
+const uint16_t PROGMEM tmux_highlight[] = {KC_J, KC_F7, COMBO_END};
+const uint16_t PROGMEM tmux_search[] = {KC_M, KC_F7, COMBO_END};
 
 const uint16_t PROGMEM bootloader[] = {KC_Q, KC_W, KC_A, KC_S,  COMBO_END};
-const uint16_t PROGMEM bootloader_right[] = {KC_O, KC_L, KC_P, KC_F11,  COMBO_END};
+const uint16_t PROGMEM bootloader_right[] = {KC_O, KC_L, KC_P, KC_F8,  COMBO_END};
+
+enum combo_index {
+    COMBO_MOUSE_LEFT,
+    COMBO_MOUSE_RIGHT,
+    COMBO_LEFT_GUI,
+    COMBO_LEFT_ALT,
+    COMBO_TMUX_COPY,
+    COMBO_TMUX_HIGHLIGHT,
+    COMBO_TMUX_SEARCH,
+    COMBO_BOOTLOADER_LEFT,
+    COMBO_BOOTLOADER_RIGHT,
+};
 
 combo_t key_combos[] = {
-    COMBO(lkm, KC_MS_BTN1),
-    COMBO(pkm, KC_MS_BTN2),
-    COMBO(lgui, KC_LGUI),
-    COMBO(lalt, KC_LALT),
+    [COMBO_MOUSE_LEFT]       = COMBO(lkm, KC_MS_BTN1),
+    [COMBO_MOUSE_RIGHT]      = COMBO(pkm, KC_MS_BTN2),
+    [COMBO_LEFT_GUI]         = COMBO(lgui, KC_LGUI),
+    [COMBO_LEFT_ALT]         = COMBO(lalt, KC_LALT),
 
-    COMBO(tmux_copy, TMUX_COPY),
-    COMBO(tmux_highlight, TMUX_HIGHLIGHT),
-    COMBO(tmux_search, TMUX_SEARCH),
+    [COMBO_TMUX_COPY]        = COMBO(tmux_copy, TMUX_COPY),
+    [COMBO_TMUX_HIGHLIGHT]   = COMBO(tmux_highlight, TMUX_HIGHLIGHT),
+    [COMBO_TMUX_SEARCH]      = COMBO(tmux_search, TMUX_SEARCH),
 
-    COMBO(bootloader, QK_BOOTLOADER),
-    COMBO(bootloader_right, QK_BOOTLOADER),
+    [COMBO_BOOTLOADER_LEFT]  = COMBO(bootloader, QK_BOOTLOADER),
+    [COMBO_BOOTLOADER_RIGHT] = COMBO(bootloader_right, QK_BOOTLOADER),
 };
+
+bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
+    (void)combo;
+    (void)keycode;
+    (void)record;
+
+    return combo_index != COMBO_LEFT_GUI || tumbler_state.win_combo_enabled;
+}
 
 static animation_mode_t current_animation = ANIMATION_UNDERGLOW;
 
@@ -337,15 +359,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     luna_process_record(keycode, record);
 #endif
 
-    // Symbol gate: block symbol keys on BASE layer (only in US layout;
-    // in Russian these keys produce letters like ж, б, ю)
-    if (symbol_gate_active && current_os_layout == 0 && get_highest_layer(layer_state) == BASE) {
-        switch (keycode) {
-        case KC_1:
-        case KC_SCLN:
-            return false;
-        }
-    }
+    // CKA exam safety: block Ctrl+W to prevent closing browser tabs
+    // if (keycode == KC_W && (get_mods() & MOD_MASK_CTRL)) {
+    //     return false;
+    // }
+
+    // Symbol gate: disabled
+    // if (symbol_gate_active && current_os_layout == 0 && get_highest_layer(layer_state) == BASE) {
+    //     switch (keycode) {
+    //     case KC_1:
+    //     case KC_SCLN:
+    //         return false;
+    //     }
+    // }
 
     // Process custom keycodes
     if (!process_custom_keycodes(keycode, record)) {
@@ -371,6 +397,163 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 static colors_to_slave_t received_led_state = {0};
 
 uint8_t layer_on_slave = 255;  // Initialize to see if it changes
+
+static const char PROGMEM layer_labels[][3] = {
+    [BASE]       = {'B', 'A', 'S'},
+    [NAVIGATION] = {'N', 'A', 'V'},
+    [SYMBOLS]    = {'S', 'Y', 'M'},
+    [NUMBERS]    = {'N', 'U', 'M'},
+    [SC_MAIN]    = {'S', 'C', '1'},
+    [SC_SEC]     = {'S', 'C', '2'},
+    [SC_THI]     = {'S', 'C', '3'},
+    [HOGWARTS]   = {'H', 'O', 'G'},
+};
+
+// Five-by-seven glyphs used by the layer labels. They are drawn at 2x scale
+// and rotated clockwise, making the three-letter word fill the 32-pixel edge.
+static const uint8_t PROGMEM large_font[36][7] = {
+    ['A' - 'A'] = {0x0E, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11},
+    ['B' - 'A'] = {0x1E, 0x11, 0x11, 0x1E, 0x11, 0x11, 0x1E},
+    ['C' - 'A'] = {0x0F, 0x10, 0x10, 0x10, 0x10, 0x10, 0x0F},
+    ['G' - 'A'] = {0x0E, 0x11, 0x10, 0x17, 0x11, 0x11, 0x0F},
+    ['H' - 'A'] = {0x11, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11},
+    ['M' - 'A'] = {0x11, 0x1B, 0x15, 0x15, 0x11, 0x11, 0x11},
+    ['N' - 'A'] = {0x11, 0x19, 0x15, 0x13, 0x11, 0x11, 0x11},
+    ['O' - 'A'] = {0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E},
+    ['S' - 'A'] = {0x0F, 0x10, 0x10, 0x0E, 0x01, 0x01, 0x1E},
+    ['U' - 'A'] = {0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E},
+    ['V' - 'A'] = {0x11, 0x11, 0x11, 0x11, 0x11, 0x0A, 0x04},
+    ['Y' - 'A'] = {0x11, 0x11, 0x0A, 0x04, 0x04, 0x04, 0x04},
+    [26 + 1]    = {0x04, 0x0C, 0x04, 0x04, 0x04, 0x04, 0x0E},
+    [26 + 2]    = {0x0E, 0x11, 0x01, 0x02, 0x04, 0x08, 0x1F},
+    [26 + 3]    = {0x1E, 0x01, 0x01, 0x0E, 0x01, 0x01, 0x1E},
+};
+
+static void draw_horizontal_line(uint8_t x, uint8_t y, uint8_t width) {
+    for (uint8_t dx = 0; dx < width; dx++) {
+        oled_write_pixel(x + dx, y, true);
+    }
+}
+
+static void draw_vertical_line(uint8_t x, uint8_t y, uint8_t height) {
+    for (uint8_t dy = 0; dy < height; dy++) {
+        oled_write_pixel(x, y + dy, true);
+    }
+}
+
+static void draw_tumbler(uint8_t x, uint8_t width, bool enabled) {
+    const uint8_t y      = 4;
+    const uint8_t height = 24;
+
+    draw_horizontal_line(x, y, width);
+    draw_horizontal_line(x, y + height - 1, width);
+    draw_vertical_line(x, y, height);
+    draw_vertical_line(x + width - 1, y, height);
+
+    // A raised, solid upper rocker is on. A diagonally hatched lower rocker is off.
+    const uint8_t fill_start = enabled ? y + 2 : y + 13;
+    const uint8_t fill_end   = enabled ? y + 10 : y + height - 2;
+    for (uint8_t fill_y = fill_start; fill_y < fill_end; fill_y++) {
+        for (uint8_t fill_x = 2; fill_x < width - 2; fill_x++) {
+            if (enabled || (fill_x + fill_y) % 4 == 0) {
+                oled_write_pixel(x + fill_x, fill_y, true);
+            }
+        }
+    }
+}
+
+static uint8_t large_glyph_row(char glyph, uint8_t row) {
+    uint8_t glyph_index;
+    if (glyph >= 'A' && glyph <= 'Z') {
+        glyph_index = glyph - 'A';
+    } else if (glyph >= '0' && glyph <= '9') {
+        glyph_index = 26 + glyph - '0';
+    } else {
+        return 0;
+    }
+
+    return pgm_read_byte(&large_font[glyph_index][row]);
+}
+
+static void draw_large_rotated_glyph(uint8_t x, uint8_t y, char glyph) {
+    for (uint8_t source_y = 0; source_y < 7; source_y++) {
+        const uint8_t pixels = large_glyph_row(glyph, source_y);
+        for (uint8_t source_x = 0; source_x < 5; source_x++) {
+            if (!(pixels & (1 << (4 - source_x)))) {
+                continue;
+            }
+
+            const uint8_t rotated_x = x + (6 - source_y) * 2;
+            const uint8_t rotated_y = y + source_x * 2;
+            for (uint8_t scale_x = 0; scale_x < 2; scale_x++) {
+                for (uint8_t scale_y = 0; scale_y < 2; scale_y++) {
+                    oled_write_pixel(rotated_x + scale_x, rotated_y + scale_y, true);
+                }
+            }
+        }
+    }
+}
+
+static void draw_large_layer_label(uint8_t x, uint8_t layer) {
+    if (layer >= ARRAY_SIZE(layer_labels)) {
+        return;
+    }
+
+    for (uint8_t character = 0; character < 3; character++) {
+        draw_large_rotated_glyph(
+            x,
+            1 + character * 10,
+            pgm_read_byte(&layer_labels[layer][character])
+        );
+    }
+}
+
+static void render_left_status(void) {
+    static uint8_t last_z = 255;
+    static uint8_t last_x = 255;
+    static uint8_t last_y = 255;
+
+    if (tumbler_state.win_combo_enabled == last_z &&
+        tumbler_state.nav_tel_enabled == last_x &&
+        tumbler_state.nav_xx1_enabled == last_y) {
+        return;
+    }
+
+    last_z = tumbler_state.win_combo_enabled;
+    last_x = tumbler_state.nav_tel_enabled;
+    last_y = tumbler_state.nav_xx1_enabled;
+
+    oled_clear();
+    draw_tumbler(37, 37, tumbler_state.win_combo_enabled);
+    draw_tumbler(80, 21, tumbler_state.nav_tel_enabled);
+    draw_tumbler(107, 21, tumbler_state.nav_xx1_enabled);
+}
+
+#ifdef MATRIX_ENABLE
+static void clear_right_label_region(void) {
+    for (uint8_t page = 0; page < OLED_DISPLAY_HEIGHT / 8; page++) {
+        for (uint8_t x = 0; x < 17; x++) {
+            oled_write_raw_byte(0, page * OLED_DISPLAY_WIDTH + x);
+        }
+    }
+}
+
+static void render_right_status(void) {
+    static uint8_t last_layer = 255;
+
+    const bool    frame_updated = render_matrix_animation();
+    const uint8_t current_layer = get_highest_layer(layer_state);
+    if (!frame_updated && current_layer == last_layer) {
+        return;
+    }
+
+    last_layer = current_layer;
+    clear_right_label_region();
+    draw_large_layer_label(1, current_layer);
+    draw_vertical_line(16, 2, 28);
+}
+#endif
+
 void write_layer_to_oled(void) {
     oled_write_P(PSTR("Layer: "), false);
     switch (get_highest_layer(layer_state)) {
@@ -436,25 +619,17 @@ void write_layer_to_oled(void) {
 }
 
 bool oled_task_user(void) {
-    if (is_keyboard_master()) {
-#ifdef LUNA_ENABLE
-        current_wpm   = get_current_wpm();
-        led_usb_state = host_keyboard_led_state();
-        render_luna(0, 13);
-#elif defined(MATRIX_ENABLE)
-        render_matrix_animation();
-#else
-        oled_clear();
-        write_layer_to_oled();
-#endif
-    } else {
-#ifdef MATRIX_ENABLE
-        render_matrix_animation();
-#else
-        oled_clear();
-        write_layer_to_oled();
-#endif
+    if (is_keyboard_left()) {
+        render_left_status();
+        return false;
     }
+
+#ifdef MATRIX_ENABLE
+    render_right_status();
+#else
+    oled_clear();
+    draw_large_layer_label(1, get_highest_layer(layer_state));
+#endif
 
     return false;
 }
@@ -496,6 +671,12 @@ void layer_refresh_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t
     }
 }
 
+void tumbler_state_sync_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    if (in_buflen == sizeof(tumbler_state)) {
+        memcpy(&tumbler_state, in_data, sizeof(tumbler_state));
+    }
+}
+
 void raw_hid_receive(uint8_t *data, uint8_t length) {
     if (length < 2) return;
     if (data[0] == 0x01) {  // Layout update command
@@ -507,6 +688,7 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
 void keyboard_post_init_user(void) {
     transaction_register_rpc(RPC_ANIMATION_STEP, rpc_animation_slave_step_handler);
     transaction_register_rpc(SLAVE_LAYER_REFRESH, layer_refresh_slave_handler);
+    transaction_register_rpc(TUMBLER_STATE_SYNC, tumbler_state_sync_handler);
     // rgb_layers_init();
 }
 

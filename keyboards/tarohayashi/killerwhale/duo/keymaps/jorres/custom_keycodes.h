@@ -51,6 +51,9 @@ enum custom_keycodes {
 
     ANIM_CYCLE,  // Cycle through animation modes
     SYM_GATE,    // Toggle: block symbol keys on BASE layer (training mode)
+    TUMBLER_Z,   // Toggle the KC_Z + KC_S Win-key combo
+    TUMBLER_X,   // Toggle NAV_TEL
+    TUMBLER_Y,   // Toggle NAV_XX1
 
     // Language-aware keys: contiguous range, processed by lang_keys.c
     // Keys that produce the correct symbol regardless of OS layout (US/RU).

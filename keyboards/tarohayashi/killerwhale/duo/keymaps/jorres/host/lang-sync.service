@@ -3,6 +3,8 @@ Description=Keyboard layout sync via Raw HID
 After=graphical-session.target
 
 [Service]
+# If you want to force x11, uncomment:
+# Environment=XDG_SESSION_TYPE=x11
 ExecStart=%h/hobbies/qmk_killer_whale/keyboards/tarohayashi/killerwhale/duo/keymaps/jorres/host/lang_sync
 Restart=on-failure
 RestartSec=3

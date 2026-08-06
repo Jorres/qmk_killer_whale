@@ -10,7 +10,7 @@
 uint32_t matrix_timer = 0;
 uint8_t current_matrix_frame = 0;
 
-void render_matrix_animation(void) {
+bool render_matrix_animation(void) {
 // 'frame_00_delay-0', 128x32px
 static const char epd_bitmap_frame_00_delay_0 [] PROGMEM = {
 	0x4c, 0x6f, 0xee, 0x3e, 0x1e, 0x0f, 0x1d, 0x0f, 0x0f, 0x09, 0x09, 0x1f, 0x1d, 0x1d, 0x0d, 0x0b,
@@ -2691,5 +2691,8 @@ uint16_t frame_sizes[72] = {
         current_matrix_frame = (current_matrix_frame + 1) % (sizeof(epd_bitmap_allArray) / sizeof(epd_bitmap_allArray[0]));
 
         oled_write_raw_P(epd_bitmap_allArray[current_matrix_frame], frame_sizes[current_matrix_frame]);
+        return true;
     }
+
+    return false;
 }

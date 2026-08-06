@@ -159,6 +159,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 - Routes to `update_leds_on_housekeeping(current_animation)`
 - Underglow uses this for key flash timeouts and corner LED animation sync
 
+## Left OLED Tumblers
+
+The physical left OLED shows three rocker-style tumblers. The first is 75%
+wider: `TUMBLER_Z` gates the `KC_Z + KC_S` Win-key combo. `TUMBLER_X` gates
+`NAV_TEL`; `TUMBLER_Y` gates `NAV_XX1`. All gates default to enabled on every
+boot and are intentionally not stored in EEPROM. Enabled rockers have a solid
+upper fill; disabled rockers have a diagonally hatched lower fill. Their state
+lives in `process_record.c` and is mirrored to the slave half with the
+`TUMBLER_STATE_SYNC` split transaction. The physical right OLED reserves a
+17-pixel strip for a large, rotated three-character layer label and keeps the
+Matrix animation running in the rest of the display.
+
 ## Adding a New Animation
 
 1. **Create files**: `animations/newmode.c` and `animations/newmode.h`

@@ -2,10 +2,23 @@
 #include "lib/add_keycodes.h"
 #include "lib/common_killerwhale.h"
 #include "lang_keys.h"
+#include "quantum/split_common/transactions.h"
 
 bool symbol_gate_active = true;
+tumbler_state_t tumbler_state = {
+    .win_combo_enabled = true,
+    .nav_tel_enabled = true,
+    .nav_xx1_enabled = true,
+};
 
 extern uint8_t current_os_layout;
+
+static bool nav_tel_registered = false;
+static bool nav_xx1_registered = false;
+
+static void sync_tumbler_state(void) {
+    transaction_rpc_send(TUMBLER_STATE_SYNC, sizeof(tumbler_state), &tumbler_state);
+}
 
 // Timer state variables
 static uint16_t i_esc_timer = 0;
@@ -73,6 +86,27 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+    case TUMBLER_Z:
+        if (record->event.pressed) {
+            tumbler_state.win_combo_enabled = !tumbler_state.win_combo_enabled;
+            sync_tumbler_state();
+            uprintf("TUMBLER_Z: %s\n", tumbler_state.win_combo_enabled ? "ON" : "OFF");
+        }
+        return false;
+    case TUMBLER_X:
+        if (record->event.pressed) {
+            tumbler_state.nav_tel_enabled = !tumbler_state.nav_tel_enabled;
+            sync_tumbler_state();
+            uprintf("TUMBLER_X: %s\n", tumbler_state.nav_tel_enabled ? "ON" : "OFF");
+        }
+        return false;
+    case TUMBLER_Y:
+        if (record->event.pressed) {
+            tumbler_state.nav_xx1_enabled = !tumbler_state.nav_xx1_enabled;
+            sync_tumbler_state();
+            uprintf("TUMBLER_Y: %s\n", tumbler_state.nav_xx1_enabled ? "ON" : "OFF");
+        }
+        return false;
     case SYM_GATE:
         if (record->event.pressed) {
             symbol_gate_active = !symbol_gate_active;
@@ -380,21 +414,31 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
     case NAV_TEL:
         uprintf("NAV_TEL\n");
         if (record->event.pressed) {
+            if (!tumbler_state.nav_tel_enabled) {
+                return false;
+            }
             register_code(KC_LGUI);
             register_code(KC_3);
-        } else {
+            nav_tel_registered = true;
+        } else if (nav_tel_registered) {
             unregister_code(KC_LGUI);
             unregister_code(KC_3);
+            nav_tel_registered = false;
         }
         return false;
     case NAV_XX1:
         uprintf("NAV_XX1\n");
         if (record->event.pressed) {
+            if (!tumbler_state.nav_xx1_enabled) {
+                return false;
+            }
             register_code(KC_LGUI);
             register_code(KC_4);
-        } else {
+            nav_xx1_registered = true;
+        } else if (nav_xx1_registered) {
             unregister_code(KC_LGUI);
             unregister_code(KC_4);
+            nav_xx1_registered = false;
         }
         return false;
     case NAV_XX2:
