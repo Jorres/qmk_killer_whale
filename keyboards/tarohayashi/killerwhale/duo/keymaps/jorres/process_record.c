@@ -7,6 +7,7 @@
 bool symbol_gate_active = true;
 tumbler_state_t tumbler_state = {
     .win_combo_enabled = true,
+    .nav_bro_enabled = true,
     .nav_tel_enabled = true,
     .nav_xx1_enabled = true,
 };
@@ -15,6 +16,7 @@ extern uint8_t current_os_layout;
 
 static bool nav_tel_registered = false;
 static bool nav_xx1_registered = false;
+static bool nav_bro_registered = false;
 
 static void sync_tumbler_state(void) {
     transaction_rpc_send(TUMBLER_STATE_SYNC, sizeof(tumbler_state), &tumbler_state);
@@ -91,6 +93,13 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
             tumbler_state.win_combo_enabled = !tumbler_state.win_combo_enabled;
             sync_tumbler_state();
             uprintf("TUMBLER_Z: %s\n", tumbler_state.win_combo_enabled ? "ON" : "OFF");
+        }
+        return false;
+    case TUMBLER_BRO:
+        if (record->event.pressed) {
+            tumbler_state.nav_bro_enabled = !tumbler_state.nav_bro_enabled;
+            sync_tumbler_state();
+            uprintf("TUMBLER_BRO: %s\n", tumbler_state.nav_bro_enabled ? "ON" : "OFF");
         }
         return false;
     case TUMBLER_X:
@@ -404,11 +413,16 @@ bool process_custom_keycodes(uint16_t keycode, keyrecord_t *record) {
     case NAV_BRO:
         uprintf("NAV_BRO\n");
         if (record->event.pressed) {
+            if (!tumbler_state.nav_bro_enabled) {
+                return false;
+            }
             register_code(KC_LGUI);
             register_code(KC_2);
-        } else {
+            nav_bro_registered = true;
+        } else if (nav_bro_registered) {
             unregister_code(KC_LGUI);
             unregister_code(KC_2);
+            nav_bro_registered = false;
         }
         return false;
     case NAV_TEL:

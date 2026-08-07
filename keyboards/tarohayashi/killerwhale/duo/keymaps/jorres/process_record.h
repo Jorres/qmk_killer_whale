@@ -5,6 +5,7 @@
 
 typedef struct {
     uint8_t win_combo_enabled;
+    uint8_t nav_bro_enabled;
     uint8_t nav_tel_enabled;
     uint8_t nav_xx1_enabled;
 } tumbler_state_t;

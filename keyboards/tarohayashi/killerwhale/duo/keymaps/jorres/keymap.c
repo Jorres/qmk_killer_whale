@@ -69,7 +69,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         RGB_TOG, SYM_GATE, KC_VOLD, KC_VOLU, KC_BRID, KC_BRIU,
         _______, TMUX_1,  TMUX_2,  TMUX_3,  TMUX_4,  TMUX_5,
         _______, TUMBLER_Z, NAV_TRM, NAV_BRO, NAV_TEL, NAV_XX1,
-                 _______, _______, _______, TUMBLER_X, TUMBLER_Y,
+                 _______, _______, TUMBLER_BRO, TUMBLER_X, TUMBLER_Y,
                           KC_TRNS,
         BRO_LEF, _______,
         _______, _______, _______, _______,          _______,
@@ -510,21 +510,25 @@ static void draw_large_layer_label(uint8_t x, uint8_t layer) {
 
 static void render_left_status(void) {
     static uint8_t last_z = 255;
+    static uint8_t last_bro = 255;
     static uint8_t last_x = 255;
     static uint8_t last_y = 255;
 
     if (tumbler_state.win_combo_enabled == last_z &&
+        tumbler_state.nav_bro_enabled == last_bro &&
         tumbler_state.nav_tel_enabled == last_x &&
         tumbler_state.nav_xx1_enabled == last_y) {
         return;
     }
 
     last_z = tumbler_state.win_combo_enabled;
+    last_bro = tumbler_state.nav_bro_enabled;
     last_x = tumbler_state.nav_tel_enabled;
     last_y = tumbler_state.nav_xx1_enabled;
 
     oled_clear();
-    draw_tumbler(37, 37, tumbler_state.win_combo_enabled);
+    draw_tumbler(10, 37, tumbler_state.win_combo_enabled);
+    draw_tumbler(53, 21, tumbler_state.nav_bro_enabled);
     draw_tumbler(80, 21, tumbler_state.nav_tel_enabled);
     draw_tumbler(107, 21, tumbler_state.nav_xx1_enabled);
 }
